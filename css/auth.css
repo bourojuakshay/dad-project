@@ -66,9 +66,48 @@ body::before {
 
 .auth-container {
   width: 100%;
-  max-width: 480px;
-  animation: fadeInUp 0.6s ease-out;
+  max-width: 1100px;
   margin: 0 auto;
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 60px;
+  width: 100%;
+}
+
+.branding-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  animation: fadeInLeft 0.8s ease-out;
+  color: var(--white);
+  padding: 40px;
+}
+
+.form-side {
+  animation: fadeInRight 0.8s ease-out;
+  width: 100%;
+  max-width: 480px;
+  justify-self: center;
+}
+
+@media (max-width: 900px) {
+  .auth-split {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .branding-side {
+    padding: 0;
+    text-align: center;
+  }
 }
 
 @media (max-width: 480px) {
@@ -77,22 +116,48 @@ body::before {
   }
 }
 
-@keyframes fadeInUp {
+@keyframes fadeInLeft {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateX(-30px);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
 /* Logo Section */
 .logo-section {
-  text-align: center;
-  margin-bottom: 30px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 900px) {
+  .logo-section {
+    text-align: center;
+  }
+
+  .badge {
+    margin: 0 auto 20px !important;
+  }
+
+  .brand-features {
+    justify-content: center;
+  }
 }
 
 .badge {
@@ -103,7 +168,7 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px;
+  margin-bottom: 25px;
   box-shadow: 0 10px 40px rgba(214, 158, 46, 0.4);
   animation: pulse 2s infinite;
 }
@@ -127,17 +192,45 @@ body::before {
 
 .logo-section h1 {
   color: var(--white);
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  font-size: 38px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  line-height: 1.2;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .subtitle {
   color: var(--gray-300);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 400;
   letter-spacing: 1px;
+  margin-bottom: 30px;
+}
+
+.brand-features {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--gray-100);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px 16px;
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+  width: fit-content;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feature-icon {
+  font-size: 18px;
 }
 
 /* Auth Card */
@@ -170,15 +263,15 @@ body::before {
 
 .tab-btn {
   flex: 1;
-  padding: 18px 20px;
+  padding: 20px 24px;
   background: transparent;
   border: none;
   font-family: 'Inter', sans-serif;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--gray-500);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 
@@ -209,7 +302,8 @@ body::before {
 
 .tab-btn.active {
   color: var(--primary-blue);
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
 }
 
 .tab-btn.active::after {
@@ -283,23 +377,23 @@ body::before {
 
 .input-wrapper input {
   width: 100%;
-  padding: 14px 45px 14px 45px;
+  padding: 16px 45px 16px 45px;
   border: 1px solid var(--gray-300);
-  border-radius: 10px;
+  border-radius: 12px;
   font-family: 'Inter', sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--gray-800);
-  transition: all 0.2s ease;
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--white);
   box-sizing: border-box;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 2px 4px rgba(11, 19, 43, 0.02);
 }
 
 .input-wrapper input:focus {
   outline: none;
-  border-color: var(--primary-blue);
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
-  box-shadow: 0 0 0 4px rgba(26, 54, 93, 0.1);
+  border-color: var(--primary-light);
+  background: var(--white);
+  box-shadow: 0 0 0 4px rgba(58, 80, 107, 0.15);
 }
 
 .input-wrapper input::placeholder {
@@ -363,14 +457,15 @@ body::before {
 /* Submit Button */
 .submit-btn {
   width: 100%;
-  padding: 16px 24px;
+  padding: 18px 24px;
   background: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-blue) 100%);
-  color: var(--white);
+  color: var(--accent-gold);
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-family: 'Inter', sans-serif;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.5px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 15px rgba(11, 19, 43, 0.3);
@@ -378,7 +473,8 @@ body::before {
 
 .submit-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(11, 19, 43, 0.4);
+  box-shadow: 0 8px 25px rgba(11, 19, 43, 0.5);
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-light) 100%);
 }
 
 .submit-btn:active {

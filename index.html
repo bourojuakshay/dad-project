@@ -1,119 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Personal Constable Portal - Authentication</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="css/auth.css">
 </head>
+
 <body>
   <div class="auth-container">
-    <!-- Police Badge Logo -->
-    <div class="logo-section">
-      <div class="badge">
-        <span class="badge-icon">🛡️</span>
+    <!-- Split Layout Wrapper -->
+    <div class="auth-split">
+
+      <!-- Left Branding Side -->
+      <div class="branding-side">
+        <div class="logo-section">
+          <div class="badge">
+            <span class="badge-icon">🛡️</span>
+          </div>
+          <h1>Personal Constable Portal</h1>
+          <p class="subtitle">Telangana State Police Department</p>
+
+          <div class="brand-features">
+            <div class="feature-item">
+              <span class="feature-icon">✨</span>
+              <span>Secure Encrypted Access</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">⚡</span>
+              <span>Real-Time Case Tracking</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <h1>Personal Constable Portal</h1>
-      <p class="subtitle">Telangana State Police Department</p>
-    </div>
 
-    <!-- Auth Card -->
-    <div class="auth-card">
-      <!-- Tab Switcher -->
-      <div class="tab-switcher">
-        <button class="tab-btn active" id="loginTab" onclick="switchTab('login')">Login</button>
-        <button class="tab-btn" id="signupTab" onclick="switchTab('signup')">Sign Up</button>
-      </div>
+      <!-- Right Form Side -->
+      <div class="form-side">
 
-      <!-- Login Form -->
-      <form id="loginForm" class="auth-form active" onsubmit="handleLogin(event)">
-        <div class="form-group">
-          <label for="loginEmail">Email / Username</label>
-          <div class="input-wrapper">
-            <span class="input-icon">📧</span>
-            <input type="text" id="loginEmail" placeholder="Enter your email or username" required>
+        <!-- Auth Card -->
+        <div class="auth-card">
+          <!-- Tab Switcher -->
+          <div class="tab-switcher">
+            <button class="tab-btn active" id="loginTab" onclick="switchTab('login')">Login</button>
+            <button class="tab-btn" id="signupTab" onclick="switchTab('signup')">Sign Up</button>
           </div>
-        </div>
-        <div class="form-group">
-          <label for="loginPassword">Password</label>
-          <div class="input-wrapper">
-            <span class="input-icon">🔒</span>
-            <input type="password" id="loginPassword" placeholder="Enter your password" required>
-            <button type="button" class="toggle-password" onclick="togglePassword('loginPassword')">👁️</button>
-          </div>
-        </div>
-        <div class="form-options">
-          <label class="remember-me">
-            <input type="checkbox" id="rememberMe">
-            <span>Remember me</span>
-          </label>
-          <a href="#" class="forgot-link">Forgot Password?</a>
-        </div>
-        <button type="submit" class="submit-btn">Login</button>
-        <p class="error-msg" id="loginError"></p>
-      </form>
 
-      <!-- Signup Form -->
-      <form id="signupForm" class="auth-form" onsubmit="handleSignup(event)">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="fullName">Full Name</label>
-            <div class="input-wrapper">
-              <span class="input-icon">👤</span>
-              <input type="text" id="fullName" placeholder="Enter full name" required>
+          <!-- Login Form -->
+          <form id="loginForm" class="auth-form active" onsubmit="handleLogin(event)">
+            <div class="form-group">
+              <label for="loginEmail">Email / Username</label>
+              <div class="input-wrapper">
+                <span class="input-icon">📧</span>
+                <input type="text" id="loginEmail" placeholder="Enter your email or username" required>
+              </div>
             </div>
-          </div>
-          <div class="form-group">
-            <label for="badgeId">Badge ID</label>
-            <div class="input-wrapper">
-              <span class="input-icon">badge</span>
-              <input type="text" id="badgeId" placeholder="Enter badge ID" required>
+            <div class="form-group">
+              <label for="loginPassword">Password</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔒</span>
+                <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                <button type="button" class="toggle-password" onclick="togglePassword('loginPassword')">👁️</button>
+              </div>
             </div>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="signupEmail">Email</label>
-          <div class="input-wrapper">
-            <span class="input-icon">📧</span>
-            <input type="email" id="signupEmail" placeholder="Enter your email" required>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="phoneNumber">Phone Number</label>
-          <div class="input-wrapper">
-            <span class="input-icon">📱</span>
-            <input type="tel" id="phoneNumber" placeholder="Enter phone number" required>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="signupPassword">Password</label>
-            <div class="input-wrapper">
-              <span class="input-icon">🔒</span>
-              <input type="password" id="signupPassword" placeholder="Create password" required>
-              <button type="button" class="toggle-password" onclick="togglePassword('signupPassword')">👁️</button>
+            <div class="form-options">
+              <label class="remember-me">
+                <input type="checkbox" id="rememberMe">
+                <span>Remember me</span>
+              </label>
+              <a href="#" class="forgot-link">Forgot Password?</a>
             </div>
-          </div>
-          <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <div class="input-wrapper">
-              <span class="input-icon">🔒</span>
-              <input type="password" id="confirmPassword" placeholder="Confirm password" required>
-              <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword')">👁️</button>
+            <button type="submit" class="submit-btn">Login</button>
+            <p class="error-msg" id="loginError"></p>
+          </form>
+
+          <!-- Signup Form -->
+          <form id="signupForm" class="auth-form" onsubmit="handleSignup(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="fullName">Full Name</label>
+                <div class="input-wrapper">
+                  <span class="input-icon">👤</span>
+                  <input type="text" id="fullName" placeholder="Enter full name" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="badgeId">Badge ID</label>
+                <div class="input-wrapper">
+                  <span class="input-icon">badge</span>
+                  <input type="text" id="badgeId" placeholder="Enter badge ID" required>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <div class="form-options">
-          <label class="remember-me">
-            <input type="checkbox" id="agreeTerms" required>
-            <span>I agree to the Terms & Conditions</span>
-          </label>
-        </div>
-        <button type="submit" class="submit-btn">Create Account</button>
-        <p class="error-msg" id="signupError"></p>
-      </form>
-    </div>
+            <div class="form-group">
+              <label for="signupEmail">Email</label>
+              <div class="input-wrapper">
+                <span class="input-icon">📧</span>
+                <input type="email" id="signupEmail" placeholder="Enter your email" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="phoneNumber">Phone Number</label>
+              <div class="input-wrapper">
+                <span class="input-icon">📱</span>
+                <input type="tel" id="phoneNumber" placeholder="Enter phone number" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="signupPassword">Password</label>
+                <div class="input-wrapper">
+                  <span class="input-icon">🔒</span>
+                  <input type="password" id="signupPassword" placeholder="Create password" required>
+                  <button type="button" class="toggle-password" onclick="togglePassword('signupPassword')">👁️</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <div class="input-wrapper">
+                  <span class="input-icon">🔒</span>
+                  <input type="password" id="confirmPassword" placeholder="Confirm password" required>
+                  <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword')">👁️</button>
+                </div>
+              </div>
+            </div>
+            <div class="form-options">
+              <label class="remember-me">
+                <input type="checkbox" id="agreeTerms" required>
+                <span>I agree to the Terms & Conditions</span>
+              </label>
+            </div>
+            <button type="submit" class="submit-btn">Create Account</button>
+            <p class="error-msg" id="signupError"></p>
+          </form>
+        </div> <!-- End Auth Card -->
+      </div> <!-- End Form Side -->
+
+    </div> <!-- End Split Layout Wrapper -->
 
     <!-- Footer -->
     <div class="auth-footer">
@@ -123,5 +148,6 @@
 
   <script src="js/auth.js"></script>
 </body>
+
 </html>
 </task_progress>
