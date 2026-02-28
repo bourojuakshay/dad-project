@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notes - Personal Constable Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <link rel="stylesheet" href="css/auto-lock.css">
+  <style>
+    .notes-content {
+      padding: 20px;
+    }
+    
+    .notes-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    
+    .notes-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .notes-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .notes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    .notes-sidebar {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      height: fit-content;
+    }
+    
+    .note-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .note-item {
+      padding: 12px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      border-radius: 8px;
+      margin-bottom: 5px;
+    }
+    
+    .note-item:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .note-item.active {
+      background-color: #e3f2fd;
+      border-left: 4px solid #2196f3;
+    }
+    
+    .note-title {
+      font-weight: 500;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .note-meta {
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .note-editor {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      flex: 2;
+    }
+    
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .editor-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .note-input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: inherit;
+      margin-bottom: 15px;
+      transition: border-color 0.3s;
+    }
+    
+    .note-input:focus {
+      outline: none;
+      border-color: #2196f3;
+    }
+    
+    .note-textarea {
+      width: 100%;
+      height: 400px;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: vertical;
+      transition: border-color 0.3s;
+    }
+    
+    .note-textarea:focus {
+      outline: none;
+      border-color: #2196f3;
+    }
+    
+    .note-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #e0e0e0;
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+      opacity: 0.5;
+    }
+    
+    @media (max-width: 768px) {
+      .notes-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .notes-sidebar {
+        order: 2;
+      }
+      
+      .note-editor {
+        order: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon">🛡️</span>
+        <span class="logo-text">Constable Portal</span>
+      </div>
+      <div class="welcome-message">
+        <span class="welcome-text">Welcome,</span>
+        <span class="user-name" id="userName">Constable Name</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-actions">
+        <button class="header-btn" id="sosBtn" onclick="triggerSOS()">
+          <span class="btn-icon">🚨</span>
+          <span class="btn-text">SOS</span>
+        </button>
+        <button class="header-btn" id="notificationsBtn" onclick="showNotifications()">
+          <span class="btn-icon">🔔</span>
+          <span class="btn-text">Alerts</span>
+          <span class="badge" id="notificationBadge">0</span>
+        </button>
+        <button class="header-btn" id="logoutBtn" onclick="logout()">
+          <span class="btn-icon">🚪</span>
+          <span class="btn-text">Logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>Navigation</h3>
+      <button class="sidebar-toggle" id="sidebarToggle">
+        <span>≡</span>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <ul>
+        <li class="nav-item">
+          <a href="dashboard.html" class="nav-link" data-page="dashboard">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="profile.html" class="nav-link" data-page="profile">
+            <span class="nav-icon">👤</span>
+            <span class="nav-text">Profile</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="complaints.html" class="nav-link" data-page="complaints">
+            <span class="nav-icon">📋</span>
+            <span class="nav-text">Complaints</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="fir.html" class="nav-link" data-page="fir">
+            <span class="nav-icon">📄</span>
+            <span class="nav-text">FIR Registration</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="cases.html" class="nav-link" data-page="cases">
+            <span class="nav-icon">📁</span>
+            <span class="nav-text">Case Updates</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="gps.html" class="nav-link" data-page="gps">
+            <span class="nav-icon">📍</span>
+            <span class="nav-text">GPS Tracking</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="camera.html" class="nav-link" data-page="camera">
+            <span class="nav-icon">📷</span>
+            <span class="nav-text">Camera</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="upload.html" class="nav-link" data-page="upload">
+            <span class="nav-icon">📤</span>
+            <span class="nav-text">Photo Upload</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="notes.html" class="nav-link active" data-page="notes">
+            <span class="nav-icon">📝</span>
+            <span class="nav-text">Notes</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link" data-page="settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Settings</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Notes Content -->
+    <div class="notes-content">
+      <!-- Notes Header -->
+      <div class="notes-header">
+        <h2 class="notes-title">📝 My Notes</h2>
+        <div class="notes-actions">
+          <button class="primary-btn" onclick="createNewNote()">
+            <span class="btn-icon">➕</span>
+            <span class="btn-text">New Note</span>
+          </button>
+          <button class="secondary-btn" onclick="deleteCurrentNote()">
+            <span class="btn-icon">🗑️</span>
+            <span class="btn-text">Delete</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Notes Grid -->
+      <div class="notes-grid">
+        <!-- Notes Sidebar -->
+        <div class="notes-sidebar">
+          <h3 style="margin-top: 0; margin-bottom: 15px;">📋 Note List</h3>
+          <ul class="note-list" id="noteList">
+            <!-- Dynamic content -->
+          </ul>
+          <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-icon">📝</div>
+            <p>No notes yet. Create your first note!</p>
+          </div>
+        </div>
+
+        <!-- Note Editor -->
+        <div class="note-editor">
+          <div class="editor-header">
+            <input type="text" id="noteTitle" class="note-input" placeholder="Note Title..." oninput="saveNote()">
+            <div class="editor-actions">
+              <button class="secondary-btn" onclick="saveNote()">
+                <span class="btn-icon">💾</span>
+                <span class="btn-text">Save</span>
+              </button>
+              <button class="primary-btn" onclick="exportNote()">
+                <span class="btn-icon">📤</span>
+                <span class="btn-text">Export</span>
+              </button>
+            </div>
+          </div>
+          
+          <textarea id="noteContent" class="note-textarea" placeholder="Start writing your note here..." oninput="saveNote()"></textarea>
+          
+          <div class="note-stats">
+            <span id="noteCount">0 notes</span>
+            <span id="wordCount">0 words</span>
+            <span id="lastModified">Last modified: Never</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Overlay for mobile -->
+  <div class="overlay" id="overlay"></div>
+
+  <script src="js/auto-lock.js"></script>
+  <script>
+    // Notes functionality
+    let currentNoteId = null;
+    let notes = [];
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      loadNotes();
+      setupEventListeners();
+    });
+    
+    // Load notes from localStorage
+    function loadNotes() {
+      const savedNotes = localStorage.getItem('constableNotes');
+      if (savedNotes) {
+        notes = JSON.parse(savedNotes);
+      } else {
+        // Create sample notes
+        notes = [
+          {
+            id: 'note-1',
+            title: 'Daily Patrol Notes',
+            content: 'Today\'s patrol observations:\n\n- Area A: No incidents\n- Area B: Traffic violation reported\n- Area C: Suspicious activity noted\n\nFollow up required.',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          {
+            id: 'note-2',
+            title: 'Case Investigation',
+            content: 'Case #2024-001 Investigation Notes:\n\nWitness statements:\n- John Doe: Saw suspect around 10 PM\n- Jane Smith: Heard loud noise\n\nEvidence collected:\n- CCTV footage\n- Fingerprints\n\nNext steps:\n- Interview additional witnesses\n- Analyze evidence',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+        ];
+        saveNotesToStorage();
+      }
+      
+      renderNotesList();
+      if (notes.length > 0) {
+        openNote(notes[0].id);
+      }
+    }
+    
+    // Save notes to localStorage
+    function saveNotesToStorage() {
+      localStorage.setItem('constableNotes', JSON.stringify(notes));
+      updateNoteCount();
+    }
+    
+    // Render notes list
+    function renderNotesList() {
+      const noteList = document.getElementById('noteList');
+      const emptyState = document.getElementById('emptyState');
+      
+      if (notes.length === 0) {
+        noteList.innerHTML = '';
+        emptyState.style.display = 'block';
+      } else {
+        emptyState.style.display = 'none';
+        noteList.innerHTML = notes.map(note => `
+          <li class="note-item ${note.id === currentNoteId ? 'active' : ''}" onclick="openNote('${note.id}')">
+            <div class="note-title">${escapeHtml(note.title)}</div>
+            <div class="note-meta">${formatDate(note.updatedAt)}</div>
+          </li>
+        `).join('');
+      }
+    }
+    
+    // Open a note
+    function openNote(noteId) {
+      currentNoteId = noteId;
+      const note = notes.find(n => n.id === noteId);
+      
+      if (note) {
+        document.getElementById('noteTitle').value = note.title;
+        document.getElementById('noteContent').value = note.content;
+        updateLastModified(note.updatedAt);
+        renderNotesList();
+        updateWordCount();
+      }
+    }
+    
+    // Create new note
+    function createNewNote() {
+      const newNote = {
+        id: 'note-' + Date.now(),
+        title: 'Untitled Note',
+        content: '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      notes.unshift(newNote);
+      saveNotesToStorage();
+      renderNotesList();
+      openNote(newNote.id);
+    }
+    
+    // Save current note
+    function saveNote() {
+      if (!currentNoteId) return;
+      
+      const noteIndex = notes.findIndex(n => n.id === currentNoteId);
+      if (noteIndex !== -1) {
+        notes[noteIndex].title = document.getElementById('noteTitle').value || 'Untitled Note';
+        notes[noteIndex].content = document.getElementById('noteContent').value;
+        notes[noteIndex].updatedAt = new Date().toISOString();
+        
+        saveNotesToStorage();
+        renderNotesList();
+        updateLastModified(notes[noteIndex].updatedAt);
+        updateWordCount();
+      }
+    }
+    
+    // Delete current note
+    function deleteCurrentNote() {
+      if (!currentNoteId) return;
+      
+      if (confirm('Are you sure you want to delete this note?')) {
+        notes = notes.filter(n => n.id !== currentNoteId);
+        saveNotesToStorage();
+        renderNotesList();
+        
+        if (notes.length > 0) {
+          openNote(notes[0].id);
+        } else {
+          currentNoteId = null;
+          document.getElementById('noteTitle').value = '';
+          document.getElementById('noteContent').value = '';
+          updateLastModified('Never');
+          updateWordCount();
+        }
+      }
+    }
+    
+    // Export note
+    function exportNote() {
+      if (!currentNoteId) return;
+      
+      const note = notes.find(n => n.id === currentNoteId);
+      const content = `# ${note.title}\n\n${note.content}\n\n---\nExported from Constable Portal\nDate: ${new Date().toLocaleString()}`;
+      
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${note.title.replace(/\s+/g, '_')}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    
+    // Update note count
+    function updateNoteCount() {
+      document.getElementById('noteCount').textContent = `${notes.length} notes`;
+    }
+    
+    // Update word count
+    function updateWordCount() {
+      const content = document.getElementById('noteContent').value;
+      const wordCount = content.trim().split(/\s+/).filter(word => word.length > 0).length;
+      document.getElementById('wordCount').textContent = `${wordCount} words`;
+    }
+    
+    // Update last modified
+    function updateLastModified(dateString) {
+      const date = new Date(dateString);
+      document.getElementById('lastModified').textContent = `Last modified: ${date.toLocaleString()}`;
+    }
+    
+    // Setup event listeners
+    function setupEventListeners() {
+      document.getElementById('noteTitle').addEventListener('input', saveNote);
+      document.getElementById('noteContent').addEventListener('input', saveNote);
+      
+      // Auto-save every 5 seconds
+      setInterval(() => {
+        if (currentNoteId) saveNote();
+      }, 5000);
+    }
+    
+    // Utility functions
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, function(match) {
+        const map = {
+          '&': '&',
+          '<': '<',
+          '>': '>',
+          '"': '"',
+          "'": '&#039;'
+        };
+        return map[match];
+      });
+    }
+    
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    }
+  </script>
+</body>
+</html>

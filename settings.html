@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - Personal Constable Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <link rel="stylesheet" href="css/settings.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon">🛡️</span>
+        <span class="logo-text">Constable Portal</span>
+      </div>
+      <div class="welcome-message">
+        <span class="welcome-text">Welcome,</span>
+        <span class="user-name" id="userName">Constable Name</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-actions">
+        <button class="header-btn" id="sosBtn" onclick="triggerSOS()">
+          <span class="btn-icon">🚨</span>
+          <span class="btn-text">SOS</span>
+        </button>
+        <button class="header-btn" id="notificationsBtn" onclick="showNotifications()">
+          <span class="btn-icon">🔔</span>
+          <span class="btn-text">Alerts</span>
+          <span class="badge" id="notificationBadge">0</span>
+        </button>
+        <button class="header-btn" id="logoutBtn" onclick="logout()">
+          <span class="btn-icon">🚪</span>
+          <span class="btn-text">Logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>Navigation</h3>
+      <button class="sidebar-toggle" id="sidebarToggle">
+        <span>≡</span>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <ul>
+        <li class="nav-item">
+          <a href="dashboard.html" class="nav-link" data-page="dashboard">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="profile.html" class="nav-link" data-page="profile">
+            <span class="nav-icon">👤</span>
+            <span class="nav-text">Profile</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="complaints.html" class="nav-link" data-page="complaints">
+            <span class="nav-icon">📋</span>
+            <span class="nav-text">Complaints</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="fir.html" class="nav-link" data-page="fir">
+            <span class="nav-icon">📄</span>
+            <span class="nav-text">FIR Registration</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="cases.html" class="nav-link" data-page="cases">
+            <span class="nav-icon">📁</span>
+            <span class="nav-text">Case Updates</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="gps.html" class="nav-link" data-page="gps">
+            <span class="nav-icon">📍</span>
+            <span class="nav-text">GPS Tracking</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="camera.html" class="nav-link" data-page="camera">
+            <span class="nav-icon">📷</span>
+            <span class="nav-text">Camera</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="upload.html" class="nav-link" data-page="upload">
+            <span class="nav-icon">📤</span>
+            <span class="nav-text">Photo Upload</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="reports.html" class="nav-link" data-page="reports">
+            <span class="nav-icon">📊</span>
+            <span class="nav-text">Reports</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="notifications.html" class="nav-link" data-page="notifications">
+            <span class="nav-icon">📢</span>
+            <span class="nav-text">Notifications</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link active" data-page="settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Settings</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Settings Content -->
+    <div class="settings-content">
+      <!-- Security Settings -->
+      <section class="settings-section">
+        <h2 class="section-title">🔐 Security Settings</h2>
+        <div class="settings-card">
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Change Password</h4>
+              <p>Update your account password for enhanced security</p>
+            </div>
+            <button class="setting-action" onclick="togglePasswordForm()">
+              <span class="action-icon">🔑</span>
+              Change Password
+            </button>
+          </div>
+          
+          <!-- Password Change Form -->
+          <div class="password-form" id="passwordForm" style="display: none;">
+            <form onsubmit="changePassword(event)">
+              <div class="form-group">
+                <label for="currentPassword">Current Password</label>
+                <div class="input-wrapper">
+                  <span class="input-icon">🔒</span>
+                  <input type="password" id="currentPassword" placeholder="Enter current password" required>
+                  <button type="button" class="toggle-password" onclick="togglePassword('currentPassword')">👁️</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="newPassword">New Password</label>
+                <div class="input-wrapper">
+                  <span class="input-icon">🔑</span>
+                  <input type="password" id="newPassword" placeholder="Enter new password" required>
+                  <button type="button" class="toggle-password" onclick="togglePassword('newPassword')">👁️</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="confirmNewPassword">Confirm New Password</label>
+                <div class="input-wrapper">
+                  <span class="input-icon">🔒</span>
+                  <input type="password" id="confirmNewPassword" placeholder="Confirm new password" required>
+                  <button type="button" class="toggle-password" onclick="togglePassword('confirmNewPassword')">👁️</button>
+                </div>
+              </div>
+              <div class="password-strength" id="passwordStrength"></div>
+              <div class="form-actions">
+                <button type="submit" class="save-btn">💾 Update Password</button>
+                <button type="button" class="cancel-btn" onclick="togglePasswordForm()">❌ Cancel</button>
+              </div>
+              <p class="error-msg" id="passwordError"></p>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- Display Settings -->
+      <section class="settings-section">
+        <h2 class="section-title">🎨 Display Settings</h2>
+        <div class="settings-card">
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Dark Mode</h4>
+              <p>Switch between light and dark themes</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Font Size</h4>
+              <p>Adjust the text size for better readability</p>
+            </div>
+            <div class="font-size-controls">
+              <button class="font-btn" onclick="adjustFontSize(-1)">A-</button>
+              <button class="font-btn" onclick="adjustFontSize(1)">A+</button>
+              <button class="font-btn reset" onclick="resetFontSize()">Reset</button>
+            </div>
+          </div>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Animations</h4>
+              <p>Enable or disable UI animations</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="animationsToggle" onchange="toggleAnimations()" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Privacy Settings -->
+      <section class="settings-section">
+        <h2 class="section-title">🔒 Privacy Settings</h2>
+        <div class="settings-card">
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Location Access</h4>
+              <p>Allow the app to access your location for GPS tracking</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="locationToggle" onchange="toggleLocationAccess()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Camera Access</h4>
+              <p>Allow the app to access your camera for photo capture</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="cameraToggle" onchange="toggleCameraAccess()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Data Collection</h4>
+              <p>Allow anonymous usage data collection for improvements</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="dataCollectionToggle" onchange="toggleDataCollection()">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Account Settings -->
+      <section class="settings-section">
+        <h2 class="section-title">👤 Account Settings</h2>
+        <div class="settings-card">
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Auto Logout</h4>
+              <p>Automatically logout after period of inactivity</p>
+            </div>
+            <select id="autoLogoutSelect" onchange="setAutoLogout()">
+              <option value="5">5 minutes</option>
+              <option value="15">15 minutes</option>
+              <option value="30">30 minutes</option>
+              <option value="60">1 hour</option>
+              <option value="0">Never</option>
+            </select>
+          </div>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Backup Data</h4>
+              <p>Create a backup of your data</p>
+            </div>
+            <button class="setting-action" onclick="backupData()">
+              <span class="action-icon">💾</span>
+              Create Backup
+            </button>
+          </div>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Clear Cache</h4>
+              <p>Clear temporary data and cache</p>
+            </div>
+            <button class="setting-action" onclick="clearCache()">
+              <span class="action-icon">🧹</span>
+              Clear Cache
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Emergency Settings -->
+      <section class="settings-section">
+        <h2 class="section-title">🚨 Emergency Settings</h2>
+        <div class="settings-card">
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>SOS Contacts</h4>
+              <p>Manage emergency contact numbers</p>
+            </div>
+            <button class="setting-action" onclick="manageSOSContacts()">
+              <span class="action-icon">📞</span>
+              Manage Contacts
+            </button>
+          </div>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Emergency Protocol</h4>
+              <p>Configure emergency response settings</p>
+            </div>
+            <button class="setting-action" onclick="configureEmergencyProtocol()">
+              <span class="action-icon">⚙️</span>
+              Configure
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- About Section -->
+      <section class="settings-section">
+        <h2 class="section-title">ℹ️ About</h2>
+        <div class="settings-card">
+          <div class="about-info">
+            <div class="about-item">
+              <span class="about-label">App Version:</span>
+              <span class="about-value">1.0.0</span>
+            </div>
+            <div class="about-item">
+              <span class="about-label">Build Date:</span>
+              <span class="about-value">February 2026</span>
+            </div>
+            <div class="about-item">
+              <span class="about-label">Department:</span>
+              <span class="about-value">Telangana State Police</span>
+            </div>
+            <div class="about-item">
+              <span class="about-label">License:</span>
+              <span class="about-value">Government Use Only</span>
+            </div>
+          </div>
+          <div class="about-actions">
+            <button class="about-btn" onclick="checkForUpdates()">
+              <span class="btn-icon">🔄</span>
+              Check for Updates
+            </button>
+            <button class="about-btn" onclick="showPrivacyPolicy()">
+              <span class="btn-icon">📄</span>
+              Privacy Policy
+            </button>
+            <button class="about-btn" onclick="showHelp()">
+              <span class="btn-icon">❓</span>
+              Help & Support
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Overlay for mobile -->
+  <div class="overlay" id="overlay"></div>
+
+  <script src="js/settings.js"></script>
+</body>
+</html>
+</task_progress>

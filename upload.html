@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo Upload - Personal Constable Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <link rel="stylesheet" href="css/upload.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon">🛡️</span>
+        <span class="logo-text">Constable Portal</span>
+      </div>
+      <div class="welcome-message">
+        <span class="welcome-text">Welcome,</span>
+        <span class="user-name" id="userName">Constable Name</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-actions">
+        <button class="header-btn" id="sosBtn" onclick="triggerSOS()">
+          <span class="btn-icon">🚨</span>
+          <span class="btn-text">SOS</span>
+        </button>
+        <button class="header-btn" id="notificationsBtn" onclick="showNotifications()">
+          <span class="btn-icon">🔔</span>
+          <span class="btn-text">Alerts</span>
+          <span class="badge" id="notificationBadge">0</span>
+        </button>
+        <button class="header-btn" id="logoutBtn" onclick="logout()">
+          <span class="btn-icon">🚪</span>
+          <span class="btn-text">Logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>Navigation</h3>
+      <button class="sidebar-toggle" id="sidebarToggle">
+        <span>≡</span>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <ul>
+        <li class="nav-item">
+          <a href="dashboard.html" class="nav-link" data-page="dashboard">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="profile.html" class="nav-link" data-page="profile">
+            <span class="nav-icon">👤</span>
+            <span class="nav-text">Profile</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="complaints.html" class="nav-link" data-page="complaints">
+            <span class="nav-icon">📋</span>
+            <span class="nav-text">Complaints</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="fir.html" class="nav-link" data-page="fir">
+            <span class="nav-icon">📄</span>
+            <span class="nav-text">FIR Registration</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="cases.html" class="nav-link" data-page="cases">
+            <span class="nav-icon">📁</span>
+            <span class="nav-text">Case Updates</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="gps.html" class="nav-link" data-page="gps">
+            <span class="nav-icon">📍</span>
+            <span class="nav-text">GPS Tracking</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="camera.html" class="nav-link" data-page="camera">
+            <span class="nav-icon">📷</span>
+            <span class="nav-text">Camera</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="upload.html" class="nav-link active" data-page="upload">
+            <span class="nav-icon">📤</span>
+            <span class="nav-text">Photo Upload</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="reports.html" class="nav-link" data-page="reports">
+            <span class="nav-icon">📊</span>
+            <span class="nav-text">Reports</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="notifications.html" class="nav-link" data-page="notifications">
+            <span class="nav-icon">📢</span>
+            <span class="nav-text">Notifications</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link" data-page="settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Settings</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Upload Content -->
+    <div class="upload-content">
+      <!-- Upload Header -->
+      <section class="upload-header">
+        <h2 class="section-title">📤 Photo Upload</h2>
+        <p class="section-subtitle">Upload and manage photos for cases, evidence, and documentation</p>
+      </section>
+
+      <!-- Upload Area -->
+      <section class="upload-area">
+        <div class="upload-card">
+          <div class="upload-dropzone" id="dropzone">
+            <div class="upload-icon">📷</div>
+            <div class="upload-text">
+              <h3>Drag & Drop Files Here</h3>
+              <p>or click to browse files</p>
+            </div>
+            <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+            <button class="primary-btn" onclick="document.getElementById('fileInput').click()">
+              <span class="btn-icon">📁</span>
+              <span class="btn-text">Browse Files</span>
+            </button>
+          </div>
+          
+          <div class="upload-info">
+            <div class="info-item">
+              <span class="info-label">Supported Formats:</span>
+              <span class="info-value">JPG, PNG, GIF, WebP</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Max File Size:</span>
+              <span class="info-value">10MB per file</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Max Files:</span>
+              <span class="info-value">20 files at once</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Upload Progress -->
+      <section class="upload-progress" id="uploadProgress" style="display: none;">
+        <h3>Upload Progress</h3>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">0%</div>
+      </section>
+
+      <!-- Uploaded Files -->
+      <section class="uploaded-files">
+        <h3 class="section-subtitle">Uploaded Files</h3>
+        <div class="files-grid" id="filesGrid">
+          <!-- Dynamic content -->
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Overlay for mobile -->
+  <div class="overlay" id="overlay"></div>
+
+  <script src="js/upload.js"></script>
+</body>
+</html>
+</task_progress>

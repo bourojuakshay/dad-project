@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Constable Portal - Security Verification</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #2c3e50, #1a2a6c);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* Animated background elements */
+        .bg-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            animation: float 10s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .security-badge {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+
+        .security-badge i {
+            font-size: 32px;
+            color: #fff;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .pin-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .pin-input {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 24px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .pin-input:focus {
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .pin-input.active {
+            border-color: #00d2ff;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+        }
+
+        .error-message {
+            color: #ff4757;
+            font-size: 14px;
+            margin-bottom: 20px;
+            min-height: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .error-message.show {
+            opacity: 1;
+        }
+
+        .attempts-info {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .keypad-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .keypad-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .keypad-btn:active {
+            transform: translateY(0);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .keypad-btn.clear {
+            grid-column: span 2;
+            background: rgba(255, 71, 87, 0.2);
+            border-color: rgba(255, 71, 87, 0.5);
+        }
+
+        .keypad-btn.clear:hover {
+            background: rgba(255, 71, 87, 0.4);
+        }
+
+        .keypad-btn.enter {
+            background: rgba(0, 210, 255, 0.2);
+            border-color: rgba(0, 210, 255, 0.5);
+        }
+
+        .keypad-btn.enter:hover {
+            background: rgba(0, 210, 255, 0.4);
+        }
+
+        .lock-screen {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .lock-screen.active {
+            display: block;
+        }
+
+        .lock-icon {
+            font-size: 48px;
+            color: #ff4757;
+            margin-bottom: 20px;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .countdown {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            margin: 20px 0;
+        }
+
+        .footer-note {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        /* Responsive design */
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+            
+            .pin-input {
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    
+    <div class="container">
+        <div class="security-badge">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        
+        <h1>Security Verification</h1>
+        <div class="subtitle">Personal Constable Portal</div>
+        
+        <div id="lock-screen" class="lock-screen">
+            <div class="lock-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h2>System Locked</h2>
+            <p>Too many failed attempts. Please wait:</p>
+            <div id="countdown" class="countdown">30</div>
+            <p>seconds</p>
+        </div>
+
+        <div id="pin-section">
+            <div class="pin-container">
+                <input type="password" class="pin-input" maxlength="1" data-index="0">
+                <input type="password" class="pin-input" maxlength="1" data-index="1">
+                <input type="password" class="pin-input" maxlength="1" data-index="2">
+                <input type="password" class="pin-input" maxlength="1" data-index="3">
+            </div>
+            
+            <div class="error-message" id="error-message">Invalid Security PIN</div>
+            
+            <div class="attempts-info" id="attempts-info">
+                Attempts remaining: 3
+            </div>
+
+            <div class="keypad">
+                <button class="keypad-btn" onclick="addNumber('1')">1</button>
+                <button class="keypad-btn" onclick="addNumber('2')">2</button>
+                <button class="keypad-btn" onclick="addNumber('3')">3</button>
+                <button class="keypad-btn" onclick="addNumber('4')">4</button>
+                <button class="keypad-btn" onclick="addNumber('5')">5</button>
+                <button class="keypad-btn" onclick="addNumber('6')">6</button>
+                <button class="keypad-btn" onclick="addNumber('7')">7</button>
+                <button class="keypad-btn" onclick="addNumber('8')">8</button>
+                <button class="keypad-btn" onclick="addNumber('9')">9</button>
+                <button class="keypad-btn clear" onclick="clearAll()">Clear All</button>
+                <button class="keypad-btn" onclick="addNumber('0')">0</button>
+                <button class="keypad-btn enter" onclick="submitPin()">Enter</button>
+            </div>
+
+            <div class="footer-note">
+                <i class="fas fa-info-circle"></i> Enter your 4-digit security PIN
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Security PIN Configuration
+        const SECURITY_PIN = '1234'; // Default PIN - can be changed by admin
+        let attempts = 3;
+        let isLocked = false;
+        let lockTimer = null;
+
+        // DOM Elements
+        const pinInputs = document.querySelectorAll('.pin-input');
+        const errorMessage = document.getElementById('error-message');
+        const attemptsInfo = document.getElementById('attempts-info');
+        const lockScreen = document.getElementById('lock-screen');
+        const countdown = document.getElementById('countdown');
+        const pinSection = document.getElementById('pin-section');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSecuritySettings();
+            updateAttemptsDisplay();
+            setupKeyboardNavigation();
+        });
+
+        // Load security settings from localStorage
+        function loadSecuritySettings() {
+            const savedPin = localStorage.getItem('security_pin');
+            if (savedPin) {
+                SECURITY_PIN = savedPin;
+            }
+        }
+
+        // Setup keyboard navigation
+        function setupKeyboardNavigation() {
+            pinInputs.forEach((input, index) => {
+                input.addEventListener('input', function() {
+                    if (this.value.length === 1) {
+                        const nextInput = pinInputs[index + 1];
+                        if (nextInput) {
+                            nextInput.focus();
+                        } else {
+                            // Last input filled, auto-submit
+                            submitPin();
+                        }
+                    }
+                });
+
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value === '') {
+                        const prevInput = pinInputs[index - 1];
+                        if (prevInput) {
+                            prevInput.focus();
+                        }
+                    }
+                });
+            });
+        }
+
+        // Add number to PIN
+        window.addNumber = function(number) {
+            if (isLocked) return;
+
+            for (let i = 0; i < pinInputs.length; i++) {
+                if (pinInputs[i].value === '') {
+                    pinInputs[i].value = number;
+                    pinInputs[i].focus();
+                    break;
+                }
+            }
+        };
+
+        // Clear all PIN inputs
+        window.clearAll = function() {
+            if (isLocked) return;
+
+            pinInputs.forEach(input => {
+                input.value = '';
+            });
+            pinInputs[0].focus();
+            hideError();
+        };
+
+        // Submit PIN
+        window.submitPin = function() {
+            if (isLocked) return;
+
+            const enteredPin = Array.from(pinInputs).map(input => input.value).join('');
+
+            if (enteredPin.length !== 4) {
+                showError('Please enter a 4-digit PIN');
+                return;
+            }
+
+            if (enteredPin === SECURITY_PIN) {
+                // Success
+                showSuccess();
+            } else {
+                // Failed attempt
+                attempts--;
+                showError('Invalid Security PIN');
+                updateAttemptsDisplay();
+
+                if (attempts <= 0) {
+                    lockSystem();
+                } else {
+                    clearAll();
+                }
+            }
+        };
+
+        // Show success animation and redirect
+        function showSuccess() {
+            // Add success styling
+            pinInputs.forEach(input => {
+                input.style.borderColor = '#2ed573';
+                input.style.background = 'rgba(46, 213, 115, 0.2)';
+            });
+
+            // Show success message briefly
+            errorMessage.style.color = '#2ed573';
+            errorMessage.textContent = 'Security Verified';
+            errorMessage.classList.add('show');
+
+            setTimeout(() => {
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
+            }, 1500);
+        }
+
+        // Show error message
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            
+            // Shake animation for inputs
+            pinInputs.forEach(input => {
+                input.style.borderColor = '#ff4757';
+                input.style.background = 'rgba(255, 71, 87, 0.2)';
+            });
+
+            setTimeout(() => {
+                pinInputs.forEach(input => {
+                    input.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                    input.style.background = 'rgba(255, 255, 255, 0.1)';
+                });
+            }, 500);
+        }
+
+        // Hide error message
+        function hideError() {
+            errorMessage.classList.remove('show');
+        }
+
+        // Update attempts display
+        function updateAttemptsDisplay() {
+            attemptsInfo.textContent = `Attempts remaining: ${attempts}`;
+            
+            if (attempts <= 1) {
+                attemptsInfo.style.color = '#ff4757';
+            } else {
+                attemptsInfo.style.color = 'rgba(255, 255, 255, 0.7)';
+            }
+        }
+
+        // Lock the system
+        function lockSystem() {
+            isLocked = true;
+            lockScreen.classList.add('active');
+            pinSection.style.display = 'none';
+
+            let timeLeft = 30;
+
+            lockTimer = setInterval(() => {
+                timeLeft--;
+                countdown.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(lockTimer);
+                    unlockSystem();
+                }
+            }, 1000);
+        }
+
+        // Unlock the system
+        function unlockSystem() {
+            isLocked = false;
+            lockScreen.classList.remove('active');
+            pinSection.style.display = 'block';
+            attempts = 3;
+            updateAttemptsDisplay();
+            clearAll();
+        }
+
+        // Handle paste event to prevent PIN pasting
+        document.addEventListener('paste', function(e) {
+            e.preventDefault();
+            showError('Paste is not allowed');
+        });
+
+        // Prevent right-click context menu
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>

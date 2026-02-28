@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complaints - Personal Constable Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <link rel="stylesheet" href="css/complaints.css">
+  <link rel="stylesheet" href="css/auto-lock.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon">🛡️</span>
+        <span class="logo-text">Constable Portal</span>
+      </div>
+      <div class="welcome-message">
+        <span class="welcome-text">Welcome,</span>
+        <span class="user-name" id="userName">Constable Name</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-actions">
+        <button class="header-btn" id="sosBtn" onclick="triggerSOS()">
+          <span class="btn-icon">🚨</span>
+          <span class="btn-text">SOS</span>
+        </button>
+        <button class="header-btn" id="notificationsBtn" onclick="showNotifications()">
+          <span class="btn-icon">🔔</span>
+          <span class="btn-text">Alerts</span>
+          <span class="badge" id="notificationBadge">0</span>
+        </button>
+        <button class="header-btn" id="logoutBtn" onclick="logout()">
+          <span class="btn-icon">🚪</span>
+          <span class="btn-text">Logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>Navigation</h3>
+      <button class="sidebar-toggle" id="sidebarToggle">
+        <span>≡</span>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <ul>
+        <li class="nav-item">
+          <a href="dashboard.html" class="nav-link" data-page="dashboard">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="profile.html" class="nav-link" data-page="profile">
+            <span class="nav-icon">👤</span>
+            <span class="nav-text">Profile</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="complaints.html" class="nav-link active" data-page="complaints">
+            <span class="nav-icon">📋</span>
+            <span class="nav-text">Complaints</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="fir.html" class="nav-link" data-page="fir">
+            <span class="nav-icon">📄</span>
+            <span class="nav-text">FIR Registration</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="cases.html" class="nav-link" data-page="cases">
+            <span class="nav-icon">📁</span>
+            <span class="nav-text">Case Updates</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="gps.html" class="nav-link" data-page="gps">
+            <span class="nav-icon">📍</span>
+            <span class="nav-text">GPS Tracking</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="camera.html" class="nav-link" data-page="camera">
+            <span class="nav-icon">📷</span>
+            <span class="nav-text">Camera</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="upload.html" class="nav-link" data-page="upload">
+            <span class="nav-icon">📤</span>
+            <span class="nav-text">Photo Upload</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="notes.html" class="nav-link" data-page="notes">
+            <span class="nav-icon">📝</span>
+            <span class="nav-text">Notes</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link" data-page="settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Settings</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Complaints Content -->
+    <div class="complaints-content">
+      <!-- Complaints Header -->
+      <section class="complaints-header">
+        <h2 class="section-title">📋 Complaints Management</h2>
+        <div class="header-actions">
+          <button class="primary-btn" onclick="openComplaintModal()">
+            <span class="btn-icon">➕</span>
+            <span class="btn-text">New Complaint</span>
+          </button>
+          <div class="search-box">
+            <input type="text" id="complaintSearch" placeholder="Search complaints..." onkeyup="searchComplaints()">
+            <span class="search-icon">🔍</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Complaints Stats -->
+      <section class="complaints-stats">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-info">
+              <div class="stat-number" id="totalComplaints">0</div>
+              <div class="stat-label">Total Complaints</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-info">
+              <div class="stat-number" id="pendingComplaints">0</div>
+              <div class="stat-label">Pending</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-info">
+              <div class="stat-number" id="resolvedComplaints">0</div>
+              <div class="stat-label">Resolved</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🚨</div>
+            <div class="stat-info">
+              <div class="stat-number" id="urgentComplaints">0</div>
+              <div class="stat-label">Urgent</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Complaints List -->
+      <section class="complaints-list">
+        <h3 class="section-subtitle">Recent Complaints</h3>
+        <div class="complaints-filters">
+          <button class="filter-btn active" onclick="filterComplaints('all')">All</button>
+          <button class="filter-btn" onclick="filterComplaints('pending')">Pending</button>
+          <button class="filter-btn" onclick="filterComplaints('resolved')">Resolved</button>
+          <button class="filter-btn" onclick="filterComplaints('urgent')">Urgent</button>
+        </div>
+        
+        <div class="complaints-table-container">
+          <table class="complaints-table">
+            <thead>
+              <tr>
+                <th>Complaint ID</th>
+                <th>Complainant</th>
+                <th>Category</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="complaintsTableBody">
+              <!-- Dynamic content -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Complaint Modal -->
+  <div id="complaintModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>New Complaint</h3>
+        <button class="modal-close" onclick="closeComplaintModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="complaintForm">
+          <div class="form-group">
+            <label for="complainantName">Complainant Name</label>
+            <input type="text" id="complainantName" required>
+          </div>
+          <div class="form-group">
+            <label for="complainantPhone">Phone Number</label>
+            <input type="tel" id="complainantPhone" required>
+          </div>
+          <div class="form-group">
+            <label for="complainantAddress">Address</label>
+            <textarea id="complainantAddress" rows="3" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="complaintCategory">Category</label>
+            <select id="complaintCategory" required>
+              <option value="">Select Category</option>
+              <option value="Theft">Theft</option>
+              <option value="Assault">Assault</option>
+              <option value="Fraud">Fraud</option>
+              <option value="Domestic Violence">Domestic Violence</option>
+              <option value="Traffic Violation">Traffic Violation</option>
+              <option value="Public Nuisance">Public Nuisance</option>
+              <option value="Missing Person">Missing Person</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="complaintDescription">Description</label>
+            <textarea id="complaintDescription" rows="4" required placeholder="Describe the incident in detail..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="complaintPriority">Priority</label>
+            <select id="complaintPriority">
+              <option value="Normal">Normal</option>
+              <option value="High">High</option>
+              <option value="Urgent">Urgent</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="complaintLocation">Incident Location</label>
+            <input type="text" id="complaintLocation" placeholder="Enter location details">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn secondary" onclick="closeComplaintModal()">Cancel</button>
+        <button class="modal-btn primary" onclick="submitComplaint()">Submit Complaint</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Complaint Details Modal -->
+  <div id="complaintDetailsModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Complaint Details</h3>
+        <button class="modal-close" onclick="closeComplaintDetailsModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="complaintDetailsContent">
+          <!-- Dynamic content -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn secondary" onclick="closeComplaintDetailsModal()">Close</button>
+        <button class="modal-btn primary" onclick="updateComplaintStatus()">Update Status</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay for mobile -->
+  <div class="overlay" id="overlay"></div>
+
+  <script src="js/complaints.js"></script>
+  <script src="js/auto-lock.js"></script>
+</body>
+</html>
+</task_progress>

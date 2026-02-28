@@ -1,0 +1,214 @@
+/* Cases Page Styles */
+.cases-content {
+  padding: 0;
+}
+
+/* Cases Header */
+.cases-header {
+  margin-bottom: 30px;
+}
+
+/* Cases Stats */
+.cases-stats {
+  margin-bottom: 30px;
+}
+
+/* Cases List */
+.cases-list {
+  margin-bottom: 30px;
+}
+
+.section-subtitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin-bottom: 16px;
+}
+
+.cases-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.cases-table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--gray-200);
+}
+
+.cases-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--white);
+}
+
+.cases-table th {
+  background: var(--primary-blue);
+  color: white;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.cases-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 14px;
+  color: var(--gray-700);
+}
+
+.cases-table tr:hover {
+  background: var(--gray-100);
+}
+
+.cases-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-pending {
+  background: rgba(250, 170, 20, 0.1);
+  color: #b7791f;
+  border: 1px solid rgba(250, 170, 20, 0.3);
+}
+
+.status-closed {
+  background: rgba(34, 197, 94, 0.1);
+  color: #166534;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-active {
+  background: rgba(229, 62, 62, 0.1);
+  color: #7f1d1d;
+  border: 1px solid rgba(229, 62, 62, 0.3);
+}
+
+.priority-badge {
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.priority-normal {
+  background: rgba(96, 165, 250, 0.1);
+  color: #1e40af;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+}
+
+.priority-high {
+  background: rgba(250, 170, 20, 0.1);
+  color: #b7791f;
+  border: 1px solid rgba(250, 170, 20, 0.3);
+}
+
+.priority-urgent {
+  background: rgba(229, 62, 62, 0.1);
+  color: #7f1d1d;
+  border: 1px solid rgba(229, 62, 62, 0.3);
+}
+
+/* Action Buttons */
+.action-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--gray-300);
+  background: var(--white);
+  color: var(--gray-700);
+  transition: all 0.3s ease;
+  margin-right: 4px;
+}
+
+.action-btn:hover {
+  background: var(--gray-200);
+  border-color: var(--gray-400);
+}
+
+.action-btn.primary {
+  background: var(--primary-blue);
+  color: white;
+  border-color: var(--primary-blue);
+}
+
+.action-btn.secondary {
+  background: rgba(96, 165, 250, 0.1);
+  border-color: var(--primary-light);
+  color: var(--primary-blue);
+}
+
+.action-btn.danger {
+  background: rgba(229, 62, 62, 0.1);
+  border-color: var(--error);
+  color: var(--error);
+}
+
+.action-btn.danger:hover {
+  background: var(--error);
+  color: white;
+  border-color: var(--error);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cases-filters {
+    justify-content: center;
+  }
+  
+  .cases-table {
+    font-size: 12px;
+  }
+  
+  .cases-table th, .cases-table td {
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    width: 95%;
+    max-height: 90vh;
+  }
+  
+  .modal-body {
+    padding: 16px;
+  }
+}
+
+/* Dark mode support */
+body.dark .cases-header {
+  color: var(--gray-200);
+}
+
+body.dark .cases-table th {
+  background: var(--gray-700);
+}
+
+body.dark .cases-table td {
+  color: var(--gray-300);
+  border-bottom-color: var(--gray-700);
+}
+
+body.dark .cases-table tr:hover {
+  background: var(--gray-700);
+}

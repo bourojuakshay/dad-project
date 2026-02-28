@@ -1,0 +1,254 @@
+/* Sidebar Styles */
+.sidebar {
+    width: 26+0px;
+    background: #f8f9fa;
+    color: #333;
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    padding: 20px;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo-icon {
+    font-size: 24px;
+    background: #1a2a6c;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.logo-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a2a6c;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    color: #1a2a6c;
+    font-size: 20px;
+    cursor: pointer;
+    display: none;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-nav li {
+    margin-bottom: 10px;
+}
+
+.sidebar-nav a {
+    color: #333;
+    text-decoration: none;
+    padding: 12px 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.sidebar-nav a:hover {
+    background: #e9ecef;
+    color: #1a2a6c;
+    transform: translateX(5px);
+}
+
+.sidebar-nav a.active {
+    background: #e3f2fd;
+    color: #1a2a6c;
+    border-left: 4px solid #1a2a6c;
+}
+
+.sidebar-footer {
+    position: absolute;
+    bottom: 30px;
+    left: 20px;
+    right: 20px;
+}
+
+.logout-btn {
+    width: 100%;
+    background: #1a2a6c;
+    border: 1px solid #152256;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.logout-btn:hover {
+    background: #152256;
+    transform: translateX(-5px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .sidebar-toggle {
+        display: block;
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .main-content.shifted {
+        margin-left: 280px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar {
+        width: 250px;
+    }
+    
+    .logo-text {
+        font-size: 16px;
+    }
+    
+    .sidebar-nav a {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+}
+
+.overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+/* Scrollbar styling */
+.sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 3px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-400);
+}
+
+/* Animation for sidebar items */
+.nav-item {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Sub-menu support (if needed in future) */
+.nav-link.has-submenu::after {
+  content: '▼';
+  font-size: 10px;
+  margin-left: auto;
+  color: var(--gray-500);
+  transition: transform 0.3s ease;
+}
+
+.nav-link.has-submenu.active::after {
+  transform: rotate(180deg);
+  color: var(--primary-blue);
+}
+
+.submenu {
+  display: none;
+  padding-left: 40px;
+  margin-top: 4px;
+}
+
+.submenu.active {
+  display: block;
+}
+
+/* Dark mode support */
+body.dark .sidebar {
+  background: var(--gray-800);
+  border-right-color: var(--gray-700);
+}
+
+body.dark .sidebar-header {
+  border-bottom-color: var(--gray-700);
+}
+
+body.dark .sidebar-nav {
+  color: var(--gray-200);
+}
+
+body.dark .nav-link:hover {
+  background: var(--gray-700);
+  color: var(--accent-gold-light);
+  border-left-color: var(--accent-gold-light);
+}
+
+body.dark .nav-link.active {
+  background: linear-gradient(135deg, rgba(214, 158, 46, 0.1) 0%, rgba(246, 224, 94, 0.1) 100%);
+  color: var(--accent-gold-light);
+}
+
+body.dark .sidebar-toggle:hover {
+  background: var(--gray-700);
+  color: var(--white);
+}
+
+body.dark .sidebar-nav::-webkit-scrollbar-thumb {
+  background: var(--gray-600);
+}
+
+body.dark .sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-500);
+}

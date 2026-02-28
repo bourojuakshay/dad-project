@@ -1,0 +1,283 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Constable Dashboard - Personal Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <link rel="stylesheet" href="css/auto-lock.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon">🛡️</span>
+        <span class="logo-text">Constable Portal</span>
+      </div>
+      <div class="welcome-message">
+        <span class="welcome-text">Welcome,</span>
+        <span class="user-name" id="userName">Constable Name</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-actions">
+        <button class="header-btn" id="sosBtn" onclick="triggerSOS()">
+          <span class="btn-icon">🚨</span>
+          <span class="btn-text">SOS</span>
+        </button>
+        <button class="header-btn" id="logoutBtn" onclick="logout()">
+          <span class="btn-icon">🚪</span>
+          <span class="btn-text">Logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>Navigation</h3>
+      <button class="sidebar-toggle" id="sidebarToggle">
+        <span>≡</span>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <ul>
+        <li class="nav-item">
+          <a href="dashboard.html" class="nav-link active" data-page="dashboard">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="profile.html" class="nav-link" data-page="profile">
+            <span class="nav-icon">👤</span>
+            <span class="nav-text">Profile</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="complaints.html" class="nav-link" data-page="complaints">
+            <span class="nav-icon">📋</span>
+            <span class="nav-text">Complaints</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="fir.html" class="nav-link" data-page="fir">
+            <span class="nav-icon">📄</span>
+            <span class="nav-text">FIR Registration</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="cases.html" class="nav-link" data-page="cases">
+            <span class="nav-icon">📁</span>
+            <span class="nav-text">Case Updates</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="gps.html" class="nav-link" data-page="gps">
+            <span class="nav-icon">📍</span>
+            <span class="nav-text">GPS Tracking</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="camera.html" class="nav-link" data-page="camera">
+            <span class="nav-icon">📷</span>
+            <span class="nav-text">Camera</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="upload.html" class="nav-link" data-page="upload">
+            <span class="nav-icon">📤</span>
+            <span class="nav-text">Photo Upload</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="notes.html" class="nav-link" data-page="notes">
+            <span class="nav-icon">📝</span>
+            <span class="nav-text">Notes</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link" data-page="settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Settings</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Dashboard Content -->
+    <div class="dashboard-content" id="dashboardContent">
+      <!-- Welcome Section -->
+      <section class="welcome-section">
+        <div class="welcome-card">
+          <div class="welcome-info">
+            <h1 class="welcome-title">Good Morning, <span id="greetingName">Officer</span></h1>
+            <p class="welcome-subtitle">Ready to serve and protect</p>
+            <div class="welcome-meta">
+              <span class="meta-item">📅 <span id="currentDate"></span></span>
+              <span class="meta-item">⏰ <span id="currentTime"></span></span>
+              <span class="meta-item">📍 <span id="currentLocation">Loading...</span></span>
+            </div>
+          </div>
+          <div class="welcome-actions">
+            <button class="welcome-btn primary" onclick="window.location.href='fir.html'">
+              <span class="btn-icon">📄</span>
+              Register FIR
+            </button>
+            <button class="welcome-btn secondary" onclick="window.location.href='gps.html'">
+              <span class="btn-icon">📍</span>
+              Track Location
+            </button>
+            <button class="welcome-btn tertiary" onclick="window.location.href='camera.html'">
+              <span class="btn-icon">📷</span>
+              Capture Evidence
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick Stats -->
+      <section class="stats-section">
+        <h2 class="section-title">📊 Quick Stats</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📄</div>
+            <div class="stat-info">
+              <div class="stat-number" id="statFIR">0</div>
+              <div class="stat-label">Active FIRs</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📁</div>
+            <div class="stat-info">
+              <div class="stat-number" id="statCases">0</div>
+              <div class="stat-label">Cases</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📍</div>
+            <div class="stat-info">
+              <div class="stat-number" id="statLocations">0</div>
+              <div class="stat-label">Locations Tracked</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📷</div>
+            <div class="stat-info">
+              <div class="stat-number" id="statPhotos">0</div>
+              <div class="stat-label">Photos Captured</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recent Activity -->
+      <section class="activity-section">
+        <h2 class="section-title">📈 Recent Activity</h2>
+        <div class="activity-feed">
+          <div class="activity-item">
+            <div class="activity-icon">📄</div>
+            <div class="activity-content">
+              <h4>New FIR Registered</h4>
+              <p>FIR #2024-001 - Theft Case</p>
+              <span class="activity-time">2 hours ago</span>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon">📍</div>
+            <div class="activity-content">
+              <h4>Location Updated</h4>
+              <p>Dichpally PS Area</p>
+              <span class="activity-time">4 hours ago</span>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon">📷</div>
+            <div class="activity-content">
+              <h4>Evidence Captured</h4>
+              <p>Photo uploaded to Case #2024-001</p>
+              <span class="activity-time">1 day ago</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick Actions -->
+      <section class="actions-section">
+        <h2 class="section-title">⚡ Quick Actions</h2>
+        <div class="actions-grid">
+          <button class="action-card" onclick="window.location.href='fir.html'">
+            <div class="action-icon">📄</div>
+            <div class="action-text">Register FIR</div>
+          </button>
+          <button class="action-card" onclick="window.location.href='gps.html'">
+            <div class="action-icon">📍</div>
+            <div class="action-text">Track GPS</div>
+          </button>
+          <button class="action-card" onclick="window.location.href='camera.html'">
+            <div class="action-icon">📷</div>
+            <div class="action-text">Capture Photo</div>
+          </button>
+          <button class="action-card" onclick="window.location.href='complaints.html'">
+            <div class="action-icon">📋</div>
+            <div class="action-text">View Complaints</div>
+          </button>
+          <button class="action-card" onclick="window.location.href='cases.html'">
+            <div class="action-icon">📁</div>
+            <div class="action-text">Case Updates</div>
+          </button>
+        </div>
+      </section>
+
+      <!-- Emergency Contacts -->
+      <section class="emergency-section">
+        <h2 class="section-title">🚨 Emergency Contacts</h2>
+        <div class="emergency-grid">
+          <div class="emergency-card">
+            <div class="emergency-icon">📞</div>
+            <div class="emergency-info">
+              <h4>Police Control Room</h4>
+              <p class="emergency-number">100</p>
+            </div>
+          </div>
+          <div class="emergency-card">
+            <div class="emergency-icon">🚑</div>
+            <div class="emergency-info">
+              <h4>Ambulance</h4>
+              <p class="emergency-number">108</p>
+            </div>
+          </div>
+          <div class="emergency-card">
+            <div class="emergency-icon">🚒</div>
+            <div class="emergency-info">
+              <h4>Fire Department</h4>
+              <p class="emergency-number">101</p>
+            </div>
+          </div>
+          <div class="emergency-card">
+            <div class="emergency-icon">👩</div>
+            <div class="emergency-info">
+              <h4>Women Helpline</h4>
+              <p class="emergency-number">181</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Overlay for mobile -->
+  <div class="overlay" id="overlay"></div>
+
+  <script src="js/dashboard.js"></script>
+  <script src="js/auto-lock.js"></script>
+</body>
+</html>
+</task_progress>

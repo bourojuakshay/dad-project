@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - Personal Constable Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <link rel="stylesheet" href="css/profile.css">
+  <link rel="stylesheet" href="css/auto-lock.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon">🛡️</span>
+        <span class="logo-text">Constable Portal</span>
+      </div>
+      <div class="welcome-message">
+        <span class="welcome-text">Welcome,</span>
+        <span class="user-name" id="userName">Constable Name</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-actions">
+        <button class="header-btn" id="sosBtn" onclick="triggerSOS()">
+          <span class="btn-icon">🚨</span>
+          <span class="btn-text">SOS</span>
+        </button>
+        <button class="header-btn" id="notificationsBtn" onclick="showNotifications()">
+          <span class="btn-icon">🔔</span>
+          <span class="btn-text">Alerts</span>
+          <span class="badge" id="notificationBadge">0</span>
+        </button>
+        <button class="header-btn" id="logoutBtn" onclick="logout()">
+          <span class="btn-icon">🚪</span>
+          <span class="btn-text">Logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>Navigation</h3>
+      <button class="sidebar-toggle" id="sidebarToggle">
+        <span>≡</span>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <ul>
+        <li class="nav-item">
+          <a href="dashboard.html" class="nav-link" data-page="dashboard">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="profile.html" class="nav-link active" data-page="profile">
+            <span class="nav-icon">👤</span>
+            <span class="nav-text">Profile</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="complaints.html" class="nav-link" data-page="complaints">
+            <span class="nav-icon">📋</span>
+            <span class="nav-text">Complaints</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="fir.html" class="nav-link" data-page="fir">
+            <span class="nav-icon">📄</span>
+            <span class="nav-text">FIR Registration</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="cases.html" class="nav-link" data-page="cases">
+            <span class="nav-icon">📁</span>
+            <span class="nav-text">Case Updates</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="gps.html" class="nav-link" data-page="gps">
+            <span class="nav-icon">📍</span>
+            <span class="nav-text">GPS Tracking</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="camera.html" class="nav-link" data-page="camera">
+            <span class="nav-icon">📷</span>
+            <span class="nav-text">Camera</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="upload.html" class="nav-link" data-page="upload">
+            <span class="nav-icon">📤</span>
+            <span class="nav-text">Photo Upload</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="notes.html" class="nav-link" data-page="notes">
+            <span class="nav-icon">📝</span>
+            <span class="nav-text">Notes</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link" data-page="settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Settings</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Profile Content -->
+    <div class="profile-content">
+      <!-- Profile Header -->
+      <section class="profile-header">
+        <div class="profile-card">
+          <div class="profile-photo-section">
+            <div class="profile-photo-container">
+              <img id="profilePhoto" src="https://via.placeholder.com/200x200/1a365d/ffffff?text=Constable" alt="Profile Photo" class="profile-photo">
+              <button class="photo-edit-btn" onclick="document.getElementById('photoInput').click()">
+                <span class="edit-icon">✏️</span>
+              </button>
+              <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="updateProfilePhoto(event)">
+            </div>
+            <div class="photo-actions">
+              <button class="photo-btn primary" onclick="capturePhoto()">
+                <span class="btn-icon">📷</span>
+                Capture Photo
+              </button>
+              <button class="photo-btn secondary" onclick="resetPhoto()">
+                <span class="btn-icon">🔄</span>
+                Reset Photo
+              </button>
+            </div>
+          </div>
+          <div class="profile-info-section">
+            <div class="profile-name">
+              <h1 id="fullName">Officer Name</h1>
+              <p id="rank" class="profile-rank">Police Constable</p>
+            </div>
+            <div class="profile-meta">
+              <div class="meta-item">
+                <span class="meta-label">Badge ID:</span>
+                <span id="badgeId" class="meta-value">TS-PC-001</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Station:</span>
+                <span id="station" class="meta-value">Dichpally PS</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">District:</span>
+                <span id="district" class="meta-value">Nizamabad</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Department:</span>
+                <span id="department" class="meta-value">Telangana State Police</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Join Date:</span>
+                <span id="joinDate" class="meta-value">2024-01-15</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Status:</span>
+                <span id="status" class="meta-value status-active">Active</span>
+              </div>
+            </div>
+            <div class="profile-actions">
+              <button class="profile-btn primary" onclick="toggleEditMode()">
+                <span class="btn-icon">✏️</span>
+                <span id="editBtnText">Edit Profile</span>
+              </button>
+              <button class="profile-btn secondary" onclick="downloadProfile()">
+                <span class="btn-icon">📥</span>
+                Download Profile
+              </button>
+              <button class="profile-btn tertiary" onclick="printProfile()">
+                <span class="btn-icon">🖨️</span>
+                Print Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact Information -->
+      <section class="contact-section">
+        <h2 class="section-title">📞 Contact Information</h2>
+        <div class="contact-grid">
+          <div class="contact-card">
+            <div class="contact-icon">📱</div>
+            <div class="contact-info">
+              <h4>Phone Number</h4>
+              <p id="phoneNumber">9908797353</p>
+            </div>
+            <button class="contact-action" onclick="copyToClipboard('phoneNumber')">
+              <span class="action-icon">📋</span>
+            </button>
+          </div>
+          <div class="contact-card">
+            <div class="contact-icon">📧</div>
+            <div class="contact-info">
+              <h4>Email Address</h4>
+              <p id="email">siridoshi@example.com</p>
+            </div>
+            <button class="contact-action" onclick="copyToClipboard('email')">
+              <span class="action-icon">📋</span>
+            </button>
+          </div>
+          <div class="contact-card">
+            <div class="contact-icon">🏠</div>
+            <div class="contact-info">
+              <h4>Station Address</h4>
+              <p id="stationAddress">Dichpally Police Station, Nizamabad District, Telangana</p>
+            </div>
+            <button class="contact-action" onclick="getDirections()">
+              <span class="action-icon">🗺️</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Service Details -->
+      <section class="service-section">
+        <h2 class="section-title">💼 Service Details</h2>
+        <div class="service-grid">
+          <div class="service-card">
+            <div class="service-header">
+              <div class="service-icon">📅</div>
+              <div class="service-title">
+                <h4>Service Duration</h4>
+                <p id="serviceDuration">2 years 3 months</p>
+              </div>
+            </div>
+            <div class="service-stats">
+              <div class="stat-item">
+                <span class="stat-label">Total Duties</span>
+                <span class="stat-value" id="totalDuties">156</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Active Cases</span>
+                <span class="stat-value" id="activeCases">12</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Solved Cases</span>
+                <span class="stat-value" id="solvedCases">89</span>
+              </div>
+            </div>
+          </div>
+          <div class="service-card">
+            <div class="service-header">
+              <div class="service-icon">🏆</div>
+              <div class="service-title">
+                <h4>Achievements</h4>
+                <p>Recognized Service</p>
+              </div>
+            </div>
+            <div class="achievements-list">
+              <div class="achievement-item">
+                <span class="achievement-icon">🏅</span>
+                <span class="achievement-text">Best Constable Award 2024</span>
+              </div>
+              <div class="achievement-item">
+                <span class="achievement-icon">⭐</span>
+                <span class="achievement-text">Commendation for Exemplary Service</span>
+              </div>
+              <div class="achievement-item">
+                <span class="achievement-icon">🎖️</span>
+                <span class="achievement-text">100% Attendance Record</span>
+              </div>
+            </div>
+          </div>
+          <div class="service-card">
+            <div class="service-header">
+              <div class="service-icon">📋</div>
+              <div class="service-title">
+                <h4>Training Completed</h4>
+                <p>Professional Development</p>
+              </div>
+            </div>
+            <div class="training-list">
+              <div class="training-item">
+                <span class="training-status completed">✓</span>
+                <span class="training-text">Basic Police Training</span>
+              </div>
+              <div class="training-item">
+                <span class="training-status completed">✓</span>
+                <span class="training-text">Cyber Crime Investigation</span>
+              </div>
+              <div class="training-item">
+                <span class="training-status pending">○</span>
+                <span class="training-text">Advanced First Aid</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Edit Form -->
+      <section class="edit-section" id="editSection" style="display: none;">
+        <h2 class="section-title">✏️ Edit Profile</h2>
+        <form class="edit-form" id="editForm" onsubmit="saveProfileChanges(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="editFullName">Full Name</label>
+              <input type="text" id="editFullName" required>
+            </div>
+            <div class="form-group">
+              <label for="editBadgeId">Badge ID</label>
+              <input type="text" id="editBadgeId" required>
+            </div>
+            <div class="form-group">
+              <label for="editRank">Rank</label>
+              <input type="text" id="editRank" required>
+            </div>
+            <div class="form-group">
+              <label for="editStation">Station</label>
+              <input type="text" id="editStation" required>
+            </div>
+            <div class="form-group">
+              <label for="editDistrict">District</label>
+              <input type="text" id="editDistrict" required>
+            </div>
+            <div class="form-group">
+              <label for="editDepartment">Department</label>
+              <input type="text" id="editDepartment" required>
+            </div>
+            <div class="form-group">
+              <label for="editPhoneNumber">Phone Number</label>
+              <input type="tel" id="editPhoneNumber" required>
+            </div>
+            <div class="form-group">
+              <label for="editEmail">Email</label>
+              <input type="email" id="editEmail" required>
+            </div>
+            <div class="form-group">
+              <label for="editJoinDate">Join Date</label>
+              <input type="date" id="editJoinDate" required>
+            </div>
+            <div class="form-group">
+              <label for="editStatus">Status</label>
+              <select id="editStatus" required>
+                <option value="Active">Active</option>
+                <option value="On Leave">On Leave</option>
+                <option value="Suspended">Suspended</option>
+                <option value="Retired">Retired</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="save-btn">💾 Save Changes</button>
+            <button type="button" class="cancel-btn" onclick="toggleEditMode()">❌ Cancel</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <!-- Overlay for mobile -->
+  <div class="overlay" id="overlay"></div>
+
+  <script src="js/profile.js"></script>
+  <script src="js/auto-lock.js"></script>
+</body>
+</html>
+</task_progress>

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Lock Test - Personal Constable Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/auto-lock.css">
+  <style>
+    .test-container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .test-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+    }
+    
+    .test-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #333;
+    }
+    
+    .test-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+    
+    .test-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .test-btn.primary {
+      background: #007bff;
+      color: white;
+    }
+    
+    .test-btn.secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .test-btn.danger {
+      background: #dc3545;
+      color: white;
+    }
+    
+    .test-btn:hover {
+      opacity: 0.8;
+      transform: translateY(-1px);
+    }
+    
+    .status-display {
+      font-family: monospace;
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      border-left: 4px solid #007bff;
+    }
+    
+    .instructions {
+      background: #e7f3ff;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 4px solid #007bff;
+      margin-bottom: 20px;
+    }
+    
+    .instructions h3 {
+      margin-top: 0;
+      color: #007bff;
+    }
+    
+    .instructions ul {
+      margin: 10px 0 0 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1 style="text-align: center; color: #333; margin-bottom: 30px;">🔒 Auto Session Lock Test</h1>
+    
+    <div class="instructions">
+      <h3>How to Test:</h3>
+      <ul>
+        <li><strong>Normal Operation:</strong> Move mouse, type, scroll, or click to reset the timer</li>
+        <li><strong>Auto Lock:</strong> Stay inactive for 2 minutes to trigger automatic lock</li>
+        <li><strong>Manual Lock:</strong> Click "Force Lock" to manually trigger the lock screen</li>
+        <li><strong>Test PIN:</strong> Default PIN is "1234" (4 digits)</li>
+        <li><strong>Failed Attempts:</strong> Enter wrong PIN 3 times to trigger lockout</li>
+        <li><strong>Lockout:</strong> After 3 failed attempts, system locks for 30 seconds</li>
+      </ul>
+    </div>
+
+    <!-- Test Controls -->
+    <div class="test-section">
+      <div class="test-title">🔧 Test Controls</div>
+      <div class="test-controls">
+        <button class="test-btn primary" onclick="autoSessionLock.forceLock()">🔒 Force Lock</button>
+        <button class="test-btn secondary" onclick="autoSessionLock.resetInactivityTimer()">⏰ Reset Timer</button>
+        <button class="test-btn danger" onclick="autoSessionLock.logoutUser()">🚪 Logout</button>
+        <button class="test-btn secondary" onclick="setTestUser()">👤 Set Test User</button>
+        <button class="test-btn secondary" onclick="clearTestUser()">🧹 Clear User</button>
+      </div>
+      <div class="status-display" id="statusDisplay">
+        Status: System Active - Timer Running
+      </div>
+    </div>
+
+    <!-- Test Information -->
+    <div class="test-section">
+      <div class="test-title">📊 System Information</div>
+      <div class="test-controls">
+        <button class="test-btn secondary" onclick="showSystemInfo()">ℹ️ Show Info</button>
+        <button class="test-btn secondary" onclick="checkUserSession()">👤 Check User</button>
+        <button class="test-btn secondary" onclick="testEvents()">🖱️ Test Events</button>
+      </div>
+      <div class="status-display" id="infoDisplay">
+        Click "Show Info" to display system status
+      </div>
+    </div>
+
+    <!-- Test Content -->
+    <div class="test-section">
+      <div class="test-title">📝 Test Area</div>
+      <p>This is a test area where you can interact with the page to test the auto-lock functionality:</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+          <h4>Input Test</h4>
+          <input type="text" placeholder="Type here to reset timer..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+          <br><br>
+          <textarea placeholder="Type in this textarea..." rows="4" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+        </div>
+        <div>
+          <h4>Interaction Test</h4>
+          <button class="test-btn primary" style="width: 100%; margin-bottom: 10px;">Click Me (Resets Timer)</button>
+          <button class="test-btn secondary" style="width: 100%; margin-bottom: 10px;">Another Button</button>
+          <button class="test-btn danger" style="width: 100%;">Danger Button</button>
+        </div>
+      </div>
+      <br>
+      <div style="height: 200px; border: 1px solid #ddd; border-radius: 4px; padding: 10px; overflow: auto;">
+        <h4>Scroll Test</h4>
+        <p>Scroll this area to reset the timer:</p>
+        <p style="height: 500px;">Scroll down to test scroll detection... The timer should reset when you scroll.</p>
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="test-section">
+      <div class="test-title">📋 Test Scenarios</div>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
+          <h4>✅ Scenario 1: Normal Usage</h4>
+          <p>1. Move mouse around</p>
+          <p>2. Type in inputs</p>
+          <p>3. Click buttons</p>
+          <p>4. Scroll the area</p>
+          <p><em>Expected: Timer resets, no lock occurs</em></p>
+        </div>
+        <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">
+          <h4>🚨 Scenario 2: Inactivity Lock</h4>
+          <p>1. Do nothing for 2 minutes</p>
+          <p>2. Or click "Force Lock"</p>
+          <p>3. Enter correct PIN (1234)</p>
+          <p><em>Expected: Lock screen appears, then unlocks with correct PIN</em></p>
+        </div>
+        <div style="background: #d1ecf1; padding: 15px; border-radius: 8px; border-left: 4px solid #17a2b8;">
+          <h4>⚠️ Scenario 3: Failed Attempts</h4>
+          <p>1. Trigger lock screen</p>
+          <p>2. Enter wrong PIN 3 times</p>
+          <p>3. Wait for lockout period</p>
+          <p><em>Expected: System locks for 30 seconds after 3 failed attempts</em></p>
+        </div>
+        <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+          <h4>🔒 Scenario 4: Security Features</h4>
+          <p>1. Try to paste in PIN field</p>
+          <p>2. Try right-click context menu</p>
+          <p>3. Try browser back/forward</p>
+          <p><em>Expected: Paste and context menu blocked, navigation restricted</em></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/auto-lock.js"></script>
+  <script>
+    // Test-specific functionality
+    let statusInterval;
+    
+    // Initialize test user
+    function setTestUser() {
+      const testUser = {
+        id: 'test-001',
+        fullName: 'Test Constable',
+        badgeId: 'TS-PC-999',
+        email: 'test@example.com',
+        phoneNumber: '9876543210',
+        password: 'test123',
+        username: 'test@example.com',
+        rank: 'Police Constable',
+        station: 'Test Station',
+        district: 'Test District',
+        department: 'Test Police',
+        joinDate: '2024-01-01',
+        status: 'Active',
+        createdAt: new Date().toISOString()
+      };
+      
+      localStorage.setItem('constableCurrentUser', JSON.stringify(testUser));
+      localStorage.setItem('security_pin', '1234');
+      
+      document.getElementById('statusDisplay').textContent = 'Status: Test user set successfully';
+      document.getElementById('statusDisplay').style.borderLeftColor = '#28a745';
+      
+      // Reload auto-lock system
+      if (window.autoSessionLock) {
+        window.autoSessionLock.destroy();
+      }
+      
+      setTimeout(() => {
+        window.autoSessionLock = new AutoSessionLock({
+          inactivityTimeout: 120000, // 2 minutes
+          maxAttempts: 3,
+          lockoutDuration: 30000, // 30 seconds
+          pinLength: 4
+        });
+      }, 100);
+    }
+    
+    function clearTestUser() {
+      localStorage.removeItem('constableCurrentUser');
+      localStorage.removeItem('security_pin');
+      sessionStorage.removeItem('constableCurrentUser');
+      
+      document.getElementById('statusDisplay').textContent = 'Status: Test user cleared';
+      document.getElementById('statusDisplay').style.borderLeftColor = '#dc3545';
+      
+      if (window.autoSessionLock) {
+        window.autoSessionLock.destroy();
+      }
+    }
+    
+    function checkUserSession() {
+      let user = sessionStorage.getItem('constableCurrentUser');
+      if (!user) {
+        user = localStorage.getItem('constableCurrentUser');
+      }
+      
+      if (user) {
+        const userData = JSON.parse(user);
+        document.getElementById('infoDisplay').innerHTML = 
+          `User Active: ${userData.fullName}<br>Badge: ${userData.badgeId}<br>Rank: ${userData.rank}`;
+        document.getElementById('infoDisplay').style.borderLeftColor = '#28a745';
+      } else {
+        document.getElementById('infoDisplay').innerHTML = 'No user session found';
+        document.getElementById('infoDisplay').style.borderLeftColor = '#dc3545';
+      }
+    }
+    
+    function showSystemInfo() {
+      const info = {
+        isActive: window.autoSessionLock ? 'Yes' : 'No',
+        isLocked: window.autoSessionLock ? window.autoSessionLock.state.isLocked : 'Unknown',
+        isLockout: window.autoSessionLock ? window.autoSessionLock.state.isLockout : 'Unknown',
+        attempts: window.autoSessionLock ? window.autoSessionLock.state.attempts : 'Unknown',
+        timer: window.autoSessionLock ? (window.autoSessionLock.state.timer ? 'Active' : 'Stopped') : 'Unknown'
+      };
+      
+      document.getElementById('infoDisplay').innerHTML = 
+        `Auto-Lock Active: ${info.isActive}<br>` +
+        `Is Locked: ${info.isLocked}<br>` +
+        `Is Lockout: ${info.isLockout}<br>` +
+        `Failed Attempts: ${info.attempts}<br>` +
+        `Timer Status: ${info.timer}`;
+      document.getElementById('infoDisplay').style.borderLeftColor = '#007bff';
+    }
+    
+    function testEvents() {
+      // Simulate user activity
+      const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+      
+      events.forEach(eventType => {
+        const event = new Event(eventType);
+        document.dispatchEvent(event);
+      });
+      
+      document.getElementById('statusDisplay').textContent = 'Status: Test events dispatched';
+      document.getElementById('statusDisplay').style.borderLeftColor = '#17a2b8';
+    }
+    
+    // Update status display periodically
+    function updateStatusDisplay() {
+      if (window.autoSessionLock) {
+        const state = window.autoSessionLock.state;
+        let status = 'System Active';
+        
+        if (state.isLocked) {
+          status = '🔒 System Locked';
+        } else if (state.isLockout) {
+          status = '⏰ System Lockout';
+        } else if (state.attempts > 0) {
+          status = `⚠️ ${state.attempts} Failed Attempts`;
+        }
+        
+        document.getElementById('statusDisplay').textContent = `Status: ${status}`;
+        
+        // Update color based on status
+        if (state.isLocked) {
+          document.getElementById('statusDisplay').style.borderLeftColor = '#dc3545';
+        } else if (state.isLockout) {
+          document.getElementById('statusDisplay').style.borderLeftColor = '#ffc107';
+        } else if (state.attempts > 0) {
+          document.getElementById('statusDisplay').style.borderLeftColor = '#ffc107';
+        } else {
+          document.getElementById('statusDisplay').style.borderLeftColor = '#007bff';
+        }
+      }
+    }
+    
+    // Start status monitoring
+    statusInterval = setInterval(updateStatusDisplay, 1000);
+    
+    // Initialize with test user
+    document.addEventListener('DOMContentLoaded', function() {
+      setTestUser();
+    });
+  </script>
+</body>
+</html>
