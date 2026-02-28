@@ -78,7 +78,7 @@
   border-radius: 12px;
   background: var(--white);
   color: var(--gray-700);
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -193,7 +193,7 @@
   border-radius: 12px;
   background: var(--white);
   color: var(--gray-700);
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -486,7 +486,7 @@
   padding: 12px 16px;
   border: 2px solid var(--gray-300);
   border-radius: 12px;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--gray-800);
   transition: all 0.3s ease;
@@ -511,7 +511,7 @@
 .save-btn, .cancel-btn {
   padding: 12px 24px;
   border-radius: 12px;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;

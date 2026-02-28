@@ -1,30 +1,50 @@
-/* Dashboard Styles */
+/* Premium Dashboard Styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 :root {
-  --primary-navy: #0a1628;
-  --primary-blue: #1a365d;
-  --primary-light: #2c5282;
-  --accent-gold: #d69e2e;
-  --accent-gold-light: #f6e05e;
+  /* Premium Dark Navy Palette */
+  --primary-navy: #0B132B;
+  --primary-blue: #1C2541;
+  --primary-light: #3A506B;
+
+  /* Authoritative Gold Accents */
+  --accent-gold: #F4D03F;
+  --accent-gold-light: #F9E79F;
+  --accent-gold-dark: #B7950B;
+
+  /* Neutrals */
   --white: #ffffff;
-  --gray-100: #f7fafc;
-  --gray-200: #edf2f7;
-  --gray-300: #e2e8f0;
-  --gray-400: #cbd5e0;
-  --gray-500: #a0aec0;
-  --gray-600: #718096;
-  --gray-700: #4a5568;
-  --gray-800: #2d3748;
-  --error: #e53e3e;
-  --success: #38a169;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-300: #D1D5DB;
+  --gray-400: #9CA3AF;
+  --gray-500: #6B7280;
+  --gray-600: #4B5563;
+  --gray-700: #374151;
+  --gray-800: #1F2937;
+  --gray-900: #111827;
+
+  /* Status Colors */
+  --error: #E74C3C;
+  --success: #2ECC71;
+  --warning: #F39C12;
+
+  /* Refined Shadows & Glassmorphism */
+  --shadow-sm: 0 1px 2px 0 rgba(11, 19, 43, 0.05);
+  --shadow: 0 4px 6px -1px rgba(11, 19, 43, 0.1), 0 2px 4px -1px rgba(11, 19, 43, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(11, 19, 43, 0.1), 0 4px 6px -2px rgba(11, 19, 43, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(11, 19, 43, 0.1), 0 10px 10px -5px rgba(11, 19, 43, 0.04);
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.4);
 }
 
 body {
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-200) 100%);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--gray-50);
+  background-image: radial-gradient(var(--gray-200) 1px, transparent 1px);
+  background-size: 20px 20px;
+  color: var(--gray-800);
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -37,14 +57,16 @@ body {
   left: 0;
   right: 0;
   height: 70px;
-  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-light) 100%);
-  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(11, 19, 43, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
   z-index: 1000;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 .header-left {
@@ -127,21 +149,23 @@ body {
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  border: 2px solid var(--gray-300);
-  border-radius: 12px;
+  border: 1px solid var(--gray-300);
+  border-radius: 10px;
   background: var(--white);
   color: var(--gray-700);
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   position: relative;
+  box-shadow: var(--shadow-sm);
 }
 
 .header-btn:hover {
   border-color: var(--primary-blue);
-  color: var(--primary-blue);
+  color: var(--primary-navy);
+  background: var(--gray-50);
   transform: translateY(-1px);
   box-shadow: var(--shadow);
 }
@@ -210,16 +234,17 @@ body {
 }
 
 .welcome-card {
-  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-light) 100%);
+  background: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-blue) 100%);
   color: var(--white);
-  border-radius: 20px;
-  padding: 30px;
+  border-radius: 16px;
+  padding: 35px;
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 30px;
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-lg);
   position: relative;
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .welcome-card::before {
@@ -227,11 +252,10 @@ body {
   position: absolute;
   top: 0;
   right: 0;
-  width: 150px;
-  height: 150px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  transform: translate(50%, -50%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(244, 208, 63, 0.15) 0%, rgba(244, 208, 63, 0) 70%);
+  transform: translate(20%, -30%);
 }
 
 .welcome-info h1 {
@@ -270,12 +294,12 @@ body {
 .welcome-btn {
   padding: 14px 24px;
   border: none;
-  border-radius: 12px;
-  font-family: 'Poppins', sans-serif;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -327,20 +351,24 @@ body {
 }
 
 .stat-card {
-  background: var(--white);
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: 16px;
-  padding: 28px;
+  padding: 24px;
   display: flex;
   align-items: center;
-  gap: 24px;
-  box-shadow: var(--shadow);
-  border: 1px solid var(--gray-200);
-  transition: all 0.3s ease;
+  gap: 20px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--glass-border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
+  border-color: rgba(244, 208, 63, 0.3);
+  /* gold hint on hover */
 }
 
 .stat-icon {
