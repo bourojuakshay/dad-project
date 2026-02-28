@@ -48,9 +48,10 @@
   background: none;
   border: none;
   color: #1a2a6c;
-  font-size: 20px;
+  font-size: 24px;
   cursor: pointer;
   display: none;
+  padding: 5px 10px;
 }
 
 .sidebar-nav ul {
@@ -127,10 +128,22 @@
 
   .sidebar-toggle {
     display: block;
-    position: fixed;
-    top: 20px;
-    left: 20px;
+    position: absolute;
+    top: 15px;
+    left: 100%;
+    margin-left: 15px;
     z-index: 1001;
+    background: var(--white, #ffffff);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar.active .sidebar-toggle {
+    /* Optional: Change icon or position when active if needed */
+    margin-left: -50px;
+    background: transparent;
+    box-shadow: none;
   }
 
   .main-content {
