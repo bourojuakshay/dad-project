@@ -41,7 +41,7 @@
 .cases-table {
   width: 100%;
   border-collapse: collapse;
-  background: var(--white);
+  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
 }
 
 .cases-table th {
@@ -134,7 +134,7 @@
   font-weight: 500;
   cursor: pointer;
   border: 1px solid var(--gray-300);
-  background: var(--white);
+  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
   color: var(--gray-700);
   transition: all 0.3s ease;
   margin-right: 4px;

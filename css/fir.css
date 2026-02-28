@@ -41,7 +41,7 @@
 .fir-table {
   width: 100%;
   border-collapse: collapse;
-  background: var(--white);
+  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
 }
 
 .fir-table th {
@@ -119,7 +119,7 @@
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--gray-800);
-  background: var(--white);
+  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   box-sizing: border-box;
 }
@@ -235,7 +235,7 @@
   font-weight: 500;
   cursor: pointer;
   border: 1px solid var(--gray-300);
-  background: var(--white);
+  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
   color: var(--gray-700);
   transition: all 0.3s ease;
   margin-right: 4px;

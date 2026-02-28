@@ -1,7 +1,7 @@
 /* Sidebar Styles */
 .sidebar {
   width: 280px;
-  background: var(--white);
+  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
   color: var(--gray-800);
   position: fixed;
   left: 0;
@@ -104,7 +104,7 @@
 
 .logout-btn {
   width: 100%;
-  background: var(--white);
+  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
   border: 1px solid var(--gray-200);
   color: var(--error);
   padding: 12px;

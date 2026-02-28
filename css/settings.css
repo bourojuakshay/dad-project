@@ -9,11 +9,12 @@
 }
 
 .settings-card {
-  background: var(--white);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: var(--shadow);
-  border: 1px solid var(--gray-200);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--glass-border, var(--gray-200));
 }
 
 /* Setting Item */
@@ -58,22 +59,23 @@
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  border: 2px solid var(--gray-300);
-  border-radius: 12px;
-  background: var(--white);
+  border: 1px solid var(--gray-300);
+  border-radius: 10px;
+  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
   color: var(--gray-700);
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 2px rgba(11, 19, 43, 0.02);
 }
 
 .setting-action:hover {
   border-color: var(--primary-blue);
-  color: var(--primary-blue);
+  color: var(--primary-navy);
   transform: translateY(-1px);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-sm);
 }
 
 .action-icon {
@@ -118,11 +120,11 @@
   border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
   background-color: var(--primary-blue);
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
   transform: translateX(26px);
 }
 
@@ -154,19 +156,20 @@ input:checked + .slider:before {
 .password-form input {
   width: 100%;
   padding: 12px 45px 12px 45px;
-  border: 2px solid var(--gray-300);
-  border-radius: 12px;
+  border: 1px solid var(--gray-300);
+  border-radius: 10px;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--gray-800);
-  transition: all 0.3s ease;
-  background: var(--gray-100);
+  transition: all 0.2s ease;
+  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .password-form input:focus {
   outline: none;
   border-color: var(--primary-blue);
-  background: var(--white);
+  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
   box-shadow: 0 0 0 4px rgba(26, 54, 93, 0.1);
 }
 
@@ -192,9 +195,17 @@ input:checked + .slider:before {
   min-height: 16px;
 }
 
-.password-strength.weak { color: var(--error); }
-.password-strength.medium { color: var(--accent-gold); }
-.password-strength.strong { color: var(--success); }
+.password-strength.weak {
+  color: var(--error);
+}
+
+.password-strength.medium {
+  color: var(--accent-gold);
+}
+
+.password-strength.strong {
+  color: var(--success);
+}
 
 .form-actions {
   display: flex;
@@ -202,7 +213,8 @@ input:checked + .slider:before {
   justify-content: flex-start;
 }
 
-.save-btn, .cancel-btn {
+.save-btn,
+.cancel-btn {
   padding: 10px 20px;
   border-radius: 12px;
   font-family: 'Inter', sans-serif;
@@ -214,9 +226,9 @@ input:checked + .slider:before {
 }
 
 .save-btn {
-  background: linear-gradient(135deg, var(--success) 0%, #2f855a 100%);
+  background: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-blue) 100%);
   color: white;
-  box-shadow: 0 4px 15px rgba(56, 161, 105, 0.3);
+  box-shadow: var(--shadow-sm);
 }
 
 .save-btn:hover {
@@ -225,7 +237,7 @@ input:checked + .slider:before {
 }
 
 .cancel-btn {
-  background: var(--white);
+  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
   color: var(--gray-700);
   border-color: var(--gray-300);
 }
@@ -246,7 +258,7 @@ input:checked + .slider:before {
   padding: 6px 12px;
   border: 2px solid var(--gray-300);
   border-radius: 8px;
-  background: var(--white);
+  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
   color: var(--gray-700);
   font-family: 'Inter', sans-serif;
   font-size: 14px;
@@ -279,7 +291,7 @@ select {
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--gray-800);
-  background: var(--white);
+  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -337,7 +349,7 @@ select:focus {
   padding: 10px 20px;
   border: 2px solid var(--gray-300);
   border-radius: 12px;
-  background: var(--white);
+  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
   color: var(--gray-700);
   font-family: 'Inter', sans-serif;
   font-size: 14px;
@@ -379,19 +391,19 @@ select:focus {
     align-items: flex-start;
     gap: 12px;
   }
-  
+
   .setting-action {
     align-self: flex-end;
   }
-  
+
   .form-actions {
     flex-direction: column;
   }
-  
+
   .about-actions {
     flex-direction: column;
   }
-  
+
   .about-btn {
     width: 100%;
     justify-content: center;
@@ -402,21 +414,21 @@ select:focus {
   .settings-card {
     padding: 16px;
   }
-  
+
   .setting-item {
     padding: 12px 0;
   }
-  
+
   .password-form {
     margin-top: 16px;
     padding-top: 16px;
   }
-  
+
   .font-size-controls {
     flex-direction: column;
     width: 100%;
   }
-  
+
   .font-btn {
     width: 100%;
     justify-content: center;
@@ -461,7 +473,7 @@ body.dark .slider {
   background-color: var(--gray-600);
 }
 
-body.dark input:checked + .slider {
+body.dark input:checked+.slider {
   background-color: var(--accent-gold-light);
 }
 
