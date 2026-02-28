@@ -534,13 +534,14 @@ body {
 @media (max-width: 1024px) {
   .main-content {
     margin-left: 0;
+    padding: 20px;
   }
-  
+
   .welcome-card {
     grid-template-columns: 1fr;
     text-align: center;
   }
-  
+
   .welcome-actions {
     align-items: center;
   }
@@ -549,32 +550,35 @@ body {
 @media (max-width: 768px) {
   .dashboard-header {
     padding: 0 16px;
+    left: 0;
+    width: 100%;
   }
-  
+
   .header-left {
     gap: 15px;
   }
-  
+
   .welcome-card {
     padding: 20px;
   }
-  
+
   .welcome-actions {
     flex-direction: row;
     gap: 8px;
     justify-content: center;
   }
-  
+
   .main-content {
-    padding: 20px;
+    padding: 15px;
   }
-  
+
   .stat-card {
     flex-direction: column;
     text-align: center;
     gap: 16px;
+    padding: 20px;
   }
-  
+
   .stat-icon {
     align-self: center;
   }
@@ -584,21 +588,44 @@ body {
   .dashboard-header {
     height: 60px;
   }
-  
+
   .welcome-card {
     padding: 16px;
   }
-  
+
   .welcome-info h1 {
-    font-size: 22px;
+    font-size: 20px;
   }
-  
+
   .welcome-meta {
     gap: 10px;
+    justify-content: center;
   }
-  
+
   .meta-item {
     font-size: 12px;
     padding: 6px 12px;
+  }
+
+  .stats-grid,
+  .actions-grid,
+  .emergency-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .welcome-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .welcome-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .activity-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
 }

@@ -55,6 +55,13 @@ body::before {
   width: 100%;
   max-width: 480px;
   animation: fadeInUp 0.6s ease-out;
+  margin: 0 auto;
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 0 10px;
+  }
 }
 
 @keyframes fadeInUp {
@@ -154,6 +161,13 @@ body::before {
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
+}
+
+@media (max-width: 480px) {
+  .tab-btn {
+    padding: 14px 10px;
+    font-size: 14px;
+  }
 }
 
 .tab-btn::after {
@@ -257,6 +271,7 @@ body::before {
   color: var(--gray-800);
   transition: all 0.3s ease;
   background: var(--gray-100);
+  box-sizing: border-box;
 }
 
 .input-wrapper input:focus {
@@ -375,20 +390,46 @@ body::before {
 
 /* Responsive */
 @media (max-width: 480px) {
+  body {
+    padding: 10px;
+    align-items: flex-start;
+    padding-top: 5vh;
+  }
+  
+  .logo-section {
+    margin-bottom: 20px;
+  }
+  
   .logo-section h1 {
-    font-size: 22px;
+    font-size: 20px;
+  }
+  
+  .subtitle {
+    font-size: 12px;
   }
   
   .auth-form {
-    padding: 20px;
+    padding: 20px 15px;
   }
   
   .badge {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
+    margin-bottom: 15px;
   }
   
   .badge-icon {
-    font-size: 40px;
+    font-size: 35px;
+  }
+  
+  .form-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0px;
   }
 }
