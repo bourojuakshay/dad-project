@@ -8,6 +8,17 @@
   margin-bottom: 30px;
 }
 
+/* Page-level action bar (renamed from .header-actions to avoid collision) */
+.fir-page-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+
 /* FIR Stats */
 .fir-stats {
   margin-bottom: 30px;
@@ -41,7 +52,8 @@
 .fir-table {
   width: 100%;
   border-collapse: collapse;
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
 }
 
 .fir-table th {
@@ -119,7 +131,8 @@
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--gray-800);
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   box-sizing: border-box;
 }
@@ -138,12 +151,147 @@
 }
 
 /* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  /* Above header and sidebar */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal.active,
+.modal[style*="display: flex"],
+.modal[style*="display:flex"] {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* When modal is shown via JS inline display:flex/block */
+.modal-backdrop-active {
+  opacity: 1;
+  visibility: visible;
+}
+
 .modal-content {
   width: 95%;
   max-width: 800px;
   max-height: 90vh;
   overflow-y: auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--gray-200);
+  animation: modalSlideIn 0.3s ease;
 }
+
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-100);
+  border-radius: 16px 16px 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--gray-600);
+  padding: 4px 8px;
+  border-radius: 6px;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: var(--gray-200);
+  color: var(--gray-800);
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--gray-200);
+  background: var(--gray-100);
+  border-radius: 0 0 16px 16px;
+  position: sticky;
+  bottom: 0;
+}
+
+.modal-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.modal-btn.primary {
+  background: var(--primary-blue);
+  color: white;
+  border-color: var(--primary-blue);
+}
+
+.modal-btn.primary:hover {
+  background: var(--primary-light);
+  border-color: var(--primary-light);
+}
+
+.modal-btn.secondary {
+  background: white;
+  color: var(--gray-700);
+  border-color: var(--gray-300);
+}
+
+.modal-btn.secondary:hover {
+  background: var(--gray-100);
+  border-color: var(--gray-400);
+}
+
 
 /* FIR Details */
 .fir-details {
@@ -235,7 +383,8 @@
   font-weight: 500;
   cursor: pointer;
   border: 1px solid var(--gray-300);
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
   color: var(--gray-700);
   transition: all 0.3s ease;
   margin-right: 4px;
@@ -275,11 +424,11 @@
   .form-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .fir-details {
     grid-template-columns: 1fr;
   }
-  
+
   .modal-content {
     width: 95%;
     max-height: 90vh;
@@ -291,7 +440,7 @@
     width: 100%;
     max-height: 95vh;
   }
-  
+
   .modal-body {
     padding: 16px;
   }

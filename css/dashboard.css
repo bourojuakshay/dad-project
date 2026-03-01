@@ -98,12 +98,14 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
-  min-width: 280px;
-  max-width: 450px;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  /* Prevent overflow */
+  max-width: 400px;
   background: rgba(255, 255, 255, 0.1);
-  padding: 15px 20px;
-  border-radius: 15px;
+  padding: 10px 16px;
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
 }
@@ -151,7 +153,8 @@ body {
   padding: 10px 16px;
   border: 1px solid var(--gray-300);
   border-radius: 10px;
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
   color: var(--gray-700);
   font-family: 'Inter', sans-serif;
   font-size: 14px;
@@ -210,9 +213,53 @@ body {
 .main-content {
   margin-left: 280px;
   margin-top: 70px;
-  padding: 40px;
+  padding: 32px 40px;
   min-height: calc(100vh - 70px);
   transition: margin-left 0.3s ease;
+  box-sizing: border-box;
+}
+
+/* ── Global Overlay (mobile sidebar backdrop) ── */
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 998;
+  /* Just below mobile sidebar (z-index: 1001) */
+  backdrop-filter: blur(2px);
+}
+
+.overlay.active {
+  display: block;
+}
+
+/* ── Mobile Hamburger Button ── */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.mobile-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 /* Sections */
@@ -407,7 +454,8 @@ body {
 }
 
 .activity-feed {
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 24px;
   box-shadow: var(--shadow);
@@ -474,7 +522,8 @@ body {
 }
 
 .action-card {
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
   border: 2px solid var(--gray-200);
   border-radius: 16px;
   padding: 28px;
@@ -517,7 +566,8 @@ body {
 }
 
 .emergency-card {
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 28px;
   display: flex;
@@ -560,11 +610,6 @@ body {
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .main-content {
-    margin-left: 0;
-    padding: 20px;
-  }
-
   .welcome-card {
     grid-template-columns: 1fr;
     text-align: center;
@@ -578,12 +623,16 @@ body {
 @media (max-width: 768px) {
   .dashboard-header {
     padding: 0 16px;
-    left: 0;
-    width: 100%;
+    height: 60px;
   }
 
   .header-left {
-    gap: 15px;
+    gap: 12px;
+  }
+
+  .welcome-message {
+    display: none;
+    /* Hide on mobile to save header space */
   }
 
   .welcome-card {
@@ -596,8 +645,12 @@ body {
     justify-content: center;
   }
 
+  /* On mobile sidebar is hidden, so content fills full width */
   .main-content {
-    padding: 15px;
+    margin-left: 0;
+    margin-top: 60px;
+    padding: 16px;
+    min-height: calc(100vh - 60px);
   }
 
   .stat-card {

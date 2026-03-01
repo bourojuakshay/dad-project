@@ -16,22 +16,22 @@ const complaintModal = document.getElementById('complaintModal');
 const complaintDetailsModal = document.getElementById('complaintDetailsModal');
 
 // Initialize Complaints Page
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   // Check authentication
   checkAuth();
-  
+
   // Set up event listeners
   setupEventListeners();
-  
+
   // Load user data
   loadUserData();
-  
+
   // Load complaints
   loadComplaints();
-  
+
   // Update statistics
   updateStatistics();
-  
+
   // Set active navigation
   setActiveNav();
 });
@@ -60,37 +60,37 @@ function setupEventListeners() {
   const sidebarToggle = document.getElementById('sidebarToggle');
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('overlay');
-  
+
   if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', function() {
+    sidebarToggle.addEventListener('click', function () {
       sidebar.classList.toggle('active');
       overlay.classList.toggle('active');
     });
   }
-  
+
   if (overlay) {
-    overlay.addEventListener('click', function() {
+    overlay.addEventListener('click', function () {
       sidebar.classList.remove('active');
       overlay.classList.remove('active');
     });
   }
-  
+
   // Close sidebar when window is resized to desktop
-  window.addEventListener('resize', function() {
+  window.addEventListener('resize', function () {
     if (window.innerWidth > 1024) {
       sidebar.classList.remove('active');
       overlay.classList.remove('active');
     }
   });
-  
+
   // Modal events
-  complaintModal.addEventListener('click', function(e) {
+  complaintModal.addEventListener('click', function (e) {
     if (e.target === complaintModal) {
       closeComplaintModal();
     }
   });
-  
-  complaintDetailsModal.addEventListener('click', function(e) {
+
+  complaintDetailsModal.addEventListener('click', function (e) {
     if (e.target === complaintDetailsModal) {
       closeComplaintDetailsModal();
     }
@@ -105,90 +105,37 @@ function loadUserData() {
   }
 }
 
-// Load complaints from localStorage
-function loadComplaints() {
-  const savedComplaints = localStorage.getItem('constableComplaints');
-  if (savedComplaints) {
-    complaints = JSON.parse(savedComplaints);
-  } else {
-    // Create sample data
-    createSampleComplaints();
+// Load complaints from Backend
+async function loadComplaints() {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  if (!token) return;
+
+  try {
+    const response = await fetch('/api/complaints', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (response.ok) {
+      complaints = await response.json();
+    } else {
+      complaints = [];
+    }
+  } catch (error) {
+    console.error('Error loading complaints:', error);
+    complaints = [];
   }
+
   renderComplaints();
 }
 
-// Create sample complaints data
-function createSampleComplaints() {
-  const sampleComplaints = [
-    {
-      id: 'CMP-' + Date.now(),
-      complainantName: 'Ramesh Kumar',
-      complainantPhone: '9876543210',
-      complainantAddress: '123 Main Street, Dichpally',
-      category: 'Theft',
-      description: 'Bicycle stolen from outside my house last night',
-      priority: 'Normal',
-      location: 'Outside residence, Main Street',
-      status: 'Pending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: 'CMP-' + (Date.now() + 1),
-      complainantName: 'Sunita Devi',
-      complainantPhone: '8765432109',
-      complainantAddress: '456 Market Road, Dichpally',
-      category: 'Assault',
-      description: 'Physical assault during argument at market',
-      priority: 'High',
-      location: 'Dichpally Market',
-      status: 'Pending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: 'CMP-' + (Date.now() + 2),
-      complainantName: 'Vijay Singh',
-      complainantPhone: '7654321098',
-      complainantAddress: '789 Station Road, Dichpally',
-      category: 'Fraud',
-      description: 'Online shopping fraud - paid but no delivery',
-      priority: 'Urgent',
-      location: 'Online',
-      status: 'Resolved',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: 'CMP-' + (Date.now() + 3),
-      complainantName: 'Anita Rao',
-      complainantPhone: '6543210987',
-      complainantAddress: '321 Gandhi Nagar, Dichpally',
-      category: 'Domestic Violence',
-      description: 'Domestic violence complaint against husband',
-      priority: 'Urgent',
-      location: 'Residence, Gandhi Nagar',
-      status: 'Pending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  ];
-  
-  complaints = sampleComplaints;
-  saveComplaints();
-}
-
-// Save complaints to localStorage
-function saveComplaints() {
-  localStorage.setItem('constableComplaints', JSON.stringify(complaints));
-}
+// Removed sample data creation and localStorage saving.
 
 // Render complaints table
 function renderComplaints() {
   complaintsTableBody.innerHTML = '';
-  
+
   const filteredComplaints = filterAndSearchComplaints();
-  
+
   if (filteredComplaints.length === 0) {
     complaintsTableBody.innerHTML = `
       <tr>
@@ -199,7 +146,7 @@ function renderComplaints() {
     `;
     return;
   }
-  
+
   filteredComplaints.forEach(complaint => {
     const row = document.createElement('tr');
     row.innerHTML = `
@@ -217,14 +164,14 @@ function renderComplaints() {
     `;
     complaintsTableBody.appendChild(row);
   });
-  
+
   updateStatistics();
 }
 
 // Filter and search complaints
 function filterAndSearchComplaints() {
   let filtered = complaints;
-  
+
   // Filter by status
   if (currentFilter !== 'all') {
     filtered = filtered.filter(complaint => {
@@ -235,11 +182,11 @@ function filterAndSearchComplaints() {
       }
     });
   }
-  
+
   // Search
   if (searchQuery.trim() !== '') {
     const query = searchQuery.toLowerCase();
-    filtered = filtered.filter(complaint => 
+    filtered = filtered.filter(complaint =>
       complaint.id.toLowerCase().includes(query) ||
       complaint.complainantName.toLowerCase().includes(query) ||
       complaint.category.toLowerCase().includes(query) ||
@@ -247,23 +194,23 @@ function filterAndSearchComplaints() {
       complaint.location.toLowerCase().includes(query)
     );
   }
-  
+
   // Sort by date (newest first)
   filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  
+
   return filtered;
 }
 
 // Filter complaints
 function filterComplaints(filter) {
   currentFilter = filter;
-  
+
   // Update filter buttons
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.classList.remove('active');
   });
   event.target.classList.add('active');
-  
+
   renderComplaints();
 }
 
@@ -276,11 +223,11 @@ function searchComplaints() {
 // Update statistics
 function updateStatistics() {
   totalComplaints.textContent = complaints.length;
-  
+
   const pending = complaints.filter(c => c.status === 'Pending').length;
   const resolved = complaints.filter(c => c.status === 'Resolved').length;
   const urgent = complaints.filter(c => c.priority === 'Urgent').length;
-  
+
   pendingComplaints.textContent = pending;
   resolvedComplaints.textContent = resolved;
   urgentComplaints.textContent = urgent;
@@ -304,7 +251,7 @@ function closeComplaintModal() {
 }
 
 // Submit complaint
-function submitComplaint() {
+async function submitComplaint() {
   const formData = {
     complainantName: document.getElementById('complainantName').value,
     complainantPhone: document.getElementById('complainantPhone').value,
@@ -314,38 +261,50 @@ function submitComplaint() {
     priority: document.getElementById('complaintPriority').value,
     location: document.getElementById('complaintLocation').value
   };
-  
+
   // Validation
-  if (!formData.complainantName || !formData.complainantPhone || !formData.complainantAddress || 
-      !formData.category || !formData.description) {
+  if (!formData.complainantName || !formData.complainantPhone || !formData.complainantAddress ||
+    !formData.category || !formData.description) {
     showNotification('Please fill in all required fields', 'error');
     return;
   }
-  
-  // Create new complaint
-  const newComplaint = {
-    id: 'CMP-' + Date.now(),
-    ...formData,
-    status: 'Pending',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  
-  // Add to complaints array
-  complaints.unshift(newComplaint);
-  saveComplaints();
-  renderComplaints();
-  
-  // Close modal and show success
-  closeComplaintModal();
-  showNotification('Complaint submitted successfully!', 'success');
+
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  try {
+    const response = await fetch('/api/complaints', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    });
+
+    if (response.ok) {
+      const newComplaint = await response.json();
+
+      // Map backend to frontend schema expectations
+      Object.assign(newComplaint, formData);
+      newComplaint.status = 'Pending';
+
+      complaints.unshift(newComplaint);
+      renderComplaints();
+      closeComplaintModal();
+      showNotification('Complaint submitted successfully!', 'success');
+    } else {
+      showNotification('Failed to submit complaint.', 'error');
+    }
+  } catch (error) {
+    console.error('Submit error:', error);
+    showNotification('Network error.', 'error');
+  }
 }
 
 // View complaint details
 function viewComplaintDetails(complaintId) {
   const complaint = complaints.find(c => c.id === complaintId);
   if (!complaint) return;
-  
+
   const content = document.getElementById('complaintDetailsContent');
   content.innerHTML = `
     <div class="complaint-details">
@@ -405,7 +364,7 @@ function viewComplaintDetails(complaintId) {
       <div class="detail-value">${complaint.location || 'Not specified'}</div>
     </div>
   `;
-  
+
   complaintDetailsModal.style.display = 'flex';
   setTimeout(() => {
     complaintDetailsModal.classList.add('active');
@@ -424,7 +383,7 @@ function closeComplaintDetailsModal() {
 function editComplaint(complaintId) {
   const complaint = complaints.find(c => c.id === complaintId);
   if (!complaint) return;
-  
+
   // Pre-fill form with complaint data
   document.getElementById('complainantName').value = complaint.complainantName;
   document.getElementById('complainantPhone').value = complaint.complainantPhone;
@@ -433,17 +392,18 @@ function editComplaint(complaintId) {
   document.getElementById('complaintDescription').value = complaint.description;
   document.getElementById('complaintPriority').value = complaint.priority;
   document.getElementById('complaintLocation').value = complaint.location;
-  
+
   // Change submit function to update
   const submitBtn = document.querySelector('.modal-footer .primary-btn');
   submitBtn.onclick = () => updateComplaint(complaintId);
   submitBtn.textContent = 'Update Complaint';
-  
+
   openComplaintModal();
 }
 
 // Update complaint
-function updateComplaint(complaintId) {
+async function updateComplaint(complaintId) {
+  // Mocking update as there's no backend endpoint to cleanly put complaints yet
   const formData = {
     complainantName: document.getElementById('complainantName').value,
     complainantPhone: document.getElementById('complainantPhone').value,
@@ -453,15 +413,14 @@ function updateComplaint(complaintId) {
     priority: document.getElementById('complaintPriority').value,
     location: document.getElementById('complaintLocation').value
   };
-  
+
   // Validation
-  if (!formData.complainantName || !formData.complainantPhone || !formData.complainantAddress || 
-      !formData.category || !formData.description) {
+  if (!formData.complainantName || !formData.complainantPhone || !formData.complainantAddress ||
+    !formData.category || !formData.description) {
     showNotification('Please fill in all required fields', 'error');
     return;
   }
-  
-  // Find and update complaint
+
   const index = complaints.findIndex(c => c.id === complaintId);
   if (index > -1) {
     complaints[index] = {
@@ -469,17 +428,16 @@ function updateComplaint(complaintId) {
       ...formData,
       updatedAt: new Date().toISOString()
     };
-    
-    saveComplaints();
+
     renderComplaints();
-    
+
     // Reset submit function
     const submitBtn = document.querySelector('.modal-footer .primary-btn');
     submitBtn.onclick = submitComplaint;
     submitBtn.textContent = 'Submit Complaint';
-    
+
     closeComplaintModal();
-    showNotification('Complaint updated successfully!', 'success');
+    showNotification('Complaint mocked update successfully!', 'success');
   }
 }
 
@@ -487,9 +445,8 @@ function updateComplaint(complaintId) {
 function deleteComplaint(complaintId) {
   if (confirm('Are you sure you want to delete this complaint?')) {
     complaints = complaints.filter(c => c.id !== complaintId);
-    saveComplaints();
     renderComplaints();
-    showNotification('Complaint deleted successfully!', 'success');
+    showNotification('Complaint mock deleted successfully!', 'success');
   }
 }
 
@@ -505,7 +462,7 @@ function updateComplaintStatus() {
 function setActiveNav() {
   const currentPage = window.location.pathname.split('/').pop();
   const currentLink = document.querySelector(`.nav-link[href="${currentPage}"]`);
-  
+
   if (currentLink) {
     currentLink.classList.add('active');
   }
@@ -517,7 +474,7 @@ function showNotification(message, type = 'info') {
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
   notification.textContent = message;
-  
+
   // Add styles
   notification.style.position = 'fixed';
   notification.style.bottom = '20px';
@@ -531,16 +488,16 @@ function showNotification(message, type = 'info') {
   notification.style.opacity = '0';
   notification.style.transform = 'translateY(20px)';
   notification.style.transition = 'all 0.3s ease';
-  
+
   // Add to DOM
   document.body.appendChild(notification);
-  
+
   // Animate in
   setTimeout(() => {
     notification.style.opacity = '1';
     notification.style.transform = 'translateY(0)';
   }, 10);
-  
+
   // Remove after 3 seconds
   setTimeout(() => {
     notification.style.opacity = '0';
@@ -555,17 +512,17 @@ function showNotification(message, type = 'info') {
 function triggerSOS() {
   const user = getCurrentUser();
   if (!user) return;
-  
+
   const message = `🚨 SOS ALERT 🚨\n\nOfficer: ${user.fullName}\nBadge ID: ${user.badgeId}\nStation: ${user.station}\nLocation: ${currentLocation ? currentLocation.textContent : 'Unknown'}\nTime: ${currentTime ? currentTime.textContent : 'Unknown'}\n\nThis is an emergency alert!`;
-  
+
   // Show alert
   alert(message);
-  
+
   // Try to call emergency numbers
   if (confirm('Do you want to call emergency services?')) {
     window.open('tel:112', '_self');
   }
-  
+
   // Store SOS alert
   const sosAlert = {
     officer: user.fullName,
@@ -575,11 +532,11 @@ function triggerSOS() {
     time: currentTime ? currentTime.textContent : 'Unknown',
     timestamp: new Date().toISOString()
   };
-  
+
   const alerts = JSON.parse(localStorage.getItem('constableSOSAlerts')) || [];
   alerts.push(sosAlert);
   localStorage.setItem('constableSOSAlerts', JSON.stringify(alerts));
-  
+
   // Show notification
   showNotification('SOS alert sent successfully!', 'success');
 }
@@ -589,27 +546,27 @@ function showNotifications() {
   const alerts = JSON.parse(localStorage.getItem('constableSOSAlerts')) || [];
   const firs = JSON.parse(localStorage.getItem('constableFIRs')) || [];
   const cases = JSON.parse(localStorage.getItem('constableCases')) || [];
-  
+
   let message = 'Recent Notifications:\n\n';
-  
+
   if (alerts.length > 0) {
     message += `🚨 SOS Alerts: ${alerts.length}\n`;
   }
-  
+
   if (firs.length > 0) {
     message += `📄 New FIRs: ${firs.length}\n`;
   }
-  
+
   if (cases.length > 0) {
     message += `📁 Case Updates: ${cases.length}\n`;
   }
-  
+
   if (alerts.length === 0 && firs.length === 0 && cases.length === 0) {
     message += 'No new notifications.';
   }
-  
+
   alert(message);
-  
+
   // Update notification badge
   const totalNotifications = alerts.length + firs.length + cases.length;
   const badge = document.getElementById('notificationBadge');

@@ -8,13 +8,16 @@
   margin-bottom: 30px;
 }
 
-.header-actions {
+/* Page-level action bar (renamed to avoid collision with dashboard .header-actions) */
+.complaints-page-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
+  margin-top: 12px;
 }
+
 
 .primary-btn {
   padding: 12px 20px;
@@ -51,7 +54,8 @@
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--gray-800);
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
   transition: all 0.3s ease;
 }
 
@@ -83,7 +87,8 @@
 }
 
 .stats-grid .stat-card {
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 24px;
   display: flex;
@@ -157,7 +162,8 @@
   cursor: pointer;
   transition: all 0.3s ease;
   border: 2px solid var(--gray-300);
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
   color: var(--gray-700);
 }
 
@@ -183,7 +189,8 @@
 .complaints-table {
   width: 100%;
   border-collapse: collapse;
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
 }
 
 .complaints-table th {
@@ -276,7 +283,8 @@
   font-weight: 500;
   cursor: pointer;
   border: 1px solid var(--gray-300);
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
   color: var(--gray-700);
   transition: all 0.3s ease;
   margin-right: 4px;
@@ -318,11 +326,12 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1100;
+  /* Above header and sidebar */
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s ease;
@@ -334,7 +343,8 @@
 }
 
 .modal-content {
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
   border-radius: 16px;
   width: 90%;
   max-width: 600px;
@@ -350,6 +360,7 @@
     transform: translateY(-20px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -415,7 +426,8 @@
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--gray-800);
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   box-sizing: border-box;
 }
@@ -454,7 +466,8 @@
 }
 
 .modal-btn.secondary {
-  background: var(--glass-bg, rgba(255,255,255,0.8)); backdrop-filter: blur(10px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
   color: var(--gray-700);
   border-color: var(--gray-300);
 }
@@ -512,23 +525,24 @@
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .search-box {
     width: 100%;
   }
-  
+
   .complaints-filters {
     justify-content: center;
   }
-  
+
   .complaints-table {
     font-size: 12px;
   }
-  
-  .complaints-table th, .complaints-table td {
+
+  .complaints-table th,
+  .complaints-table td {
     padding: 8px;
   }
-  
+
   .complaint-details {
     grid-template-columns: 1fr;
   }
@@ -538,20 +552,20 @@
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .stats-grid .stat-card {
     padding: 16px;
   }
-  
+
   .stats-grid .stat-number {
     font-size: 20px;
   }
-  
+
   .modal-content {
     width: 95%;
     max-height: 90vh;
   }
-  
+
   .modal-body {
     padding: 16px;
   }

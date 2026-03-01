@@ -22,19 +22,19 @@ const editSection = document.getElementById('editSection');
 const editBtnText = document.getElementById('editBtnText');
 
 // Initialize Profile Page
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   // Check authentication
   checkAuth();
-  
+
   // Set up event listeners
   setupEventListeners();
-  
+
   // Load user data
   loadProfileData();
-  
+
   // Update service duration
   updateServiceDuration();
-  
+
   // Update stats
   updateStats();
 });
@@ -63,29 +63,29 @@ function setupEventListeners() {
   const sidebarToggle = document.getElementById('sidebarToggle');
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('overlay');
-  
+
   if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', function() {
+    sidebarToggle.addEventListener('click', function () {
       sidebar.classList.toggle('active');
       overlay.classList.toggle('active');
     });
   }
-  
+
   if (overlay) {
-    overlay.addEventListener('click', function() {
+    overlay.addEventListener('click', function () {
       sidebar.classList.remove('active');
       overlay.classList.remove('active');
     });
   }
-  
+
   // Close sidebar when window is resized to desktop
-  window.addEventListener('resize', function() {
+  window.addEventListener('resize', function () {
     if (window.innerWidth > 1024) {
       sidebar.classList.remove('active');
       overlay.classList.remove('active');
     }
   });
-  
+
   // Set active navigation
   setActiveNav();
 }
@@ -94,10 +94,10 @@ function setupEventListeners() {
 function loadProfileData() {
   const user = getCurrentUser();
   if (!user) return;
-  
+
   // Update header
   userName.textContent = user.fullName;
-  
+
   // Update profile info
   fullName.textContent = user.fullName;
   rank.textContent = user.rank;
@@ -107,14 +107,14 @@ function loadProfileData() {
   department.textContent = user.department;
   joinDate.textContent = user.joinDate;
   status.textContent = user.status;
-  
+
   // Update contact info
   phoneNumber.textContent = user.phoneNumber;
   email.textContent = user.email;
-  
+
   // Update status class
   status.className = 'meta-value status-' + user.status.toLowerCase().replace(' ', '-');
-  
+
   // Update profile photo if exists
   const savedPhoto = localStorage.getItem('constableProfilePhoto');
   if (savedPhoto) {
@@ -126,45 +126,58 @@ function loadProfileData() {
 function updateServiceDuration() {
   const user = getCurrentUser();
   if (!user) return;
-  
+
   const joinDateObj = new Date(user.joinDate);
   const today = new Date();
-  
+
   const diffTime = Math.abs(today - joinDateObj);
   const diffYears = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365));
   const diffMonths = Math.floor((diffTime % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30));
-  
+
   serviceDuration.textContent = `${diffYears} years ${diffMonths} months`;
 }
 
 // Update stats
-function updateStats() {
-  // Get data from localStorage
-  const firs = JSON.parse(localStorage.getItem('constableFIRs')) || [];
-  const cases = JSON.parse(localStorage.getItem('constableCases')) || [];
-  
-  // Count active and solved cases
-  const activeCount = cases.filter(c => c.status === 'Active').length;
-  const solvedCount = cases.filter(c => c.status === 'Closed').length;
-  
-  // Count total duties (simulate based on join date)
-  const user = getCurrentUser();
-  if (user) {
-    const joinDateObj = new Date(user.joinDate);
-    const today = new Date();
-    const diffDays = Math.floor((today - joinDateObj) / (1000 * 60 * 60 * 24));
-    const dutiesCount = Math.floor(diffDays * 0.8); // Assume 80% duty rate
-    totalDuties.textContent = dutiesCount;
+async function updateStats() {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  if (!token) return;
+
+  try {
+    const headers = { 'Authorization': `Bearer ${token}` };
+
+    // Fetch Cases to count active/solved
+    const casesRes = await fetch('/api/cases', { headers });
+    let cases = [];
+    if (casesRes.ok) {
+      cases = await casesRes.json();
+    }
+
+    // Count active and solved cases
+    const activeCount = cases.filter(c => c.status !== 'Closed').length;
+    const solvedCount = cases.filter(c => c.status === 'Closed').length;
+
+    // Count total duties (simulate based on join date)
+    const user = getCurrentUser();
+    if (user) {
+      const joinDateObj = new Date(user.joinDate || user.createdAt || Date.now());
+      const today = new Date();
+      const diffDays = Math.floor((today - joinDateObj) / (1000 * 60 * 60 * 24));
+      // Fallback duty if diffDays is zero or NaN
+      const dutiesCount = Math.floor((diffDays > 0 ? diffDays : 1) * 0.8);
+      if (totalDuties) totalDuties.textContent = dutiesCount;
+    }
+
+    if (activeCases) activeCases.textContent = activeCount;
+    if (solvedCases) solvedCases.textContent = solvedCount;
+  } catch (error) {
+    console.error("Error fetching stats:", error)
   }
-  
-  activeCases.textContent = activeCount;
-  solvedCases.textContent = solvedCount;
 }
 
 // Toggle edit mode
 function toggleEditMode() {
   const isEditing = editSection.style.display === 'block';
-  
+
   if (isEditing) {
     // Save changes and exit edit mode
     editSection.style.display = 'none';
@@ -180,7 +193,7 @@ function toggleEditMode() {
 function enterEditMode() {
   const user = getCurrentUser();
   if (!user) return;
-  
+
   // Populate edit form
   document.getElementById('editFullName').value = user.fullName;
   document.getElementById('editBadgeId').value = user.badgeId;
@@ -192,22 +205,21 @@ function enterEditMode() {
   document.getElementById('editEmail').value = user.email;
   document.getElementById('editJoinDate').value = user.joinDate;
   document.getElementById('editStatus').value = user.status;
-  
+
   // Show edit form
   editSection.style.display = 'block';
   editBtnText.textContent = 'Cancel Edit';
 }
 
 // Save profile changes
-function saveProfileChanges(e) {
+async function saveProfileChanges(e) {
   e.preventDefault();
-  
+
   const user = getCurrentUser();
   if (!user) return;
-  
+
   // Get form values
-  const updatedUser = {
-    ...user,
+  const payload = {
     fullName: document.getElementById('editFullName').value,
     badgeId: document.getElementById('editBadgeId').value,
     rank: document.getElementById('editRank').value,
@@ -217,35 +229,32 @@ function saveProfileChanges(e) {
     phoneNumber: document.getElementById('editPhoneNumber').value,
     email: document.getElementById('editEmail').value,
     joinDate: document.getElementById('editJoinDate').value,
-    status: document.getElementById('editStatus').value,
+    status: document.getElementById('editStatus').value
+  };
+
+  const updatedUser = {
+    ...user,
+    ...payload,
     updatedAt: new Date().toISOString()
   };
-  
-  // Update storage
+
+  // Update storage locally as the backend /api/users PUT logic might not be cleanly mocked yet.
   if (sessionStorage.getItem('constableCurrentUser')) {
     sessionStorage.setItem('constableCurrentUser', JSON.stringify(updatedUser));
   } else {
     localStorage.setItem('constableCurrentUser', JSON.stringify(updatedUser));
   }
-  
-  // Update current user in memory
-  const currentUserKey = sessionStorage.getItem('constableCurrentUser') ? 'constableCurrentUser' : 'constableCurrentUser';
-  if (sessionStorage.getItem(currentUserKey)) {
-    sessionStorage.setItem(currentUserKey, JSON.stringify(updatedUser));
-  } else {
-    localStorage.setItem(currentUserKey, JSON.stringify(updatedUser));
-  }
-  
+
   // Reload profile data
   loadProfileData();
   updateServiceDuration();
-  
+
   // Exit edit mode
   editSection.style.display = 'none';
   editBtnText.textContent = 'Edit Profile';
-  
+
   // Show success message
-  showNotification('Profile updated successfully!', 'success');
+  showNotification('Profile updated mock successfully!', 'success');
 }
 
 // Update profile photo
@@ -253,7 +262,7 @@ function updateProfilePhoto(event) {
   const file = event.target.files[0];
   if (file) {
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
       profilePhoto.src = e.target.result;
       localStorage.setItem('constableProfilePhoto', e.target.result);
       showNotification('Profile photo updated!', 'success');
@@ -269,7 +278,7 @@ function capturePhoto() {
     showNotification('Camera not supported by this browser', 'error');
     return;
   }
-  
+
   // Create camera modal
   const modal = document.createElement('div');
   modal.className = 'modal';
@@ -285,7 +294,7 @@ function capturePhoto() {
     justify-content: center;
     z-index: 1000;
   `;
-  
+
   const modalContent = document.createElement('div');
   modalContent.style.cssText = `
     background: white;
@@ -295,7 +304,7 @@ function capturePhoto() {
     width: 90%;
     max-width: 500px;
   `;
-  
+
   const video = document.createElement('video');
   video.style.cssText = `
     width: 100%;
@@ -307,10 +316,10 @@ function capturePhoto() {
   `;
   video.autoplay = true;
   video.playsInline = true;
-  
+
   const controls = document.createElement('div');
   controls.style.cssText = 'margin-top: 20px; display: flex; gap: 10px; justify-content: center;';
-  
+
   const captureBtn = document.createElement('button');
   captureBtn.textContent = '📸 Capture';
   captureBtn.style.cssText = `
@@ -322,7 +331,7 @@ function capturePhoto() {
     cursor: pointer;
     font-weight: 600;
   `;
-  
+
   const cancelBtn = document.createElement('button');
   cancelBtn.textContent = '❌ Cancel';
   cancelBtn.style.cssText = `
@@ -334,19 +343,19 @@ function capturePhoto() {
     cursor: pointer;
     font-weight: 600;
   `;
-  
+
   controls.appendChild(captureBtn);
   controls.appendChild(cancelBtn);
   modalContent.appendChild(video);
   modalContent.appendChild(controls);
   modal.appendChild(modalContent);
   document.body.appendChild(modal);
-  
+
   // Start camera
   navigator.mediaDevices.getUserMedia({ video: true })
     .then(stream => {
       video.srcObject = stream;
-      
+
       captureBtn.onclick = () => {
         // Create canvas to capture photo
         const canvas = document.createElement('canvas');
@@ -354,18 +363,18 @@ function capturePhoto() {
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0);
-        
+
         // Convert to data URL and save
         const dataURL = canvas.toDataURL('image/jpeg');
         profilePhoto.src = dataURL;
         localStorage.setItem('constableProfilePhoto', dataURL);
         showNotification('Profile photo captured!', 'success');
-        
+
         // Stop camera and close modal
         stream.getTracks().forEach(track => track.stop());
         document.body.removeChild(modal);
       };
-      
+
       cancelBtn.onclick = () => {
         stream.getTracks().forEach(track => track.stop());
         document.body.removeChild(modal);
@@ -390,10 +399,10 @@ function resetPhoto() {
 function copyToClipboard(elementId) {
   const element = document.getElementById(elementId);
   const text = element.textContent;
-  
-  navigator.clipboard.writeText(text).then(function() {
+
+  navigator.clipboard.writeText(text).then(function () {
     showNotification('Copied to clipboard!', 'success');
-  }).catch(function(err) {
+  }).catch(function (err) {
     console.error('Could not copy text: ', err);
   });
 }
@@ -409,7 +418,7 @@ function getDirections() {
 function downloadProfile() {
   const user = getCurrentUser();
   if (!user) return;
-  
+
   const profileData = {
     PersonalInfo: {
       Name: user.fullName,
@@ -430,7 +439,7 @@ function downloadProfile() {
     },
     GeneratedOn: new Date().toLocaleString()
   };
-  
+
   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(profileData, null, 2));
   const downloadAnchorNode = document.createElement('a');
   downloadAnchorNode.setAttribute("href", dataStr);
@@ -449,7 +458,7 @@ function printProfile() {
 function setActiveNav() {
   const currentPage = window.location.pathname.split('/').pop();
   const currentLink = document.querySelector(`.nav-link[href="${currentPage}"]`);
-  
+
   if (currentLink) {
     currentLink.classList.add('active');
   }
@@ -461,7 +470,7 @@ function showNotification(message, type = 'info') {
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
   notification.textContent = message;
-  
+
   // Add styles
   notification.style.position = 'fixed';
   notification.style.bottom = '20px';
@@ -475,16 +484,16 @@ function showNotification(message, type = 'info') {
   notification.style.opacity = '0';
   notification.style.transform = 'translateY(20px)';
   notification.style.transition = 'all 0.3s ease';
-  
+
   // Add to DOM
   document.body.appendChild(notification);
-  
+
   // Animate in
   setTimeout(() => {
     notification.style.opacity = '1';
     notification.style.transform = 'translateY(0)';
   }, 10);
-  
+
   // Remove after 3 seconds
   setTimeout(() => {
     notification.style.opacity = '0';
@@ -518,17 +527,17 @@ function formatTime(dateString) {
 function triggerSOS() {
   const user = getCurrentUser();
   if (!user) return;
-  
+
   const message = `🚨 SOS ALERT 🚨\n\nOfficer: ${user.fullName}\nBadge ID: ${user.badgeId}\nStation: ${user.station}\nLocation: ${currentLocation ? currentLocation.textContent : 'Unknown'}\nTime: ${currentTime ? currentTime.textContent : 'Unknown'}\n\nThis is an emergency alert!`;
-  
+
   // Show alert
   alert(message);
-  
+
   // Try to call emergency numbers
   if (confirm('Do you want to call emergency services?')) {
     window.open('tel:112', '_self');
   }
-  
+
   // Store SOS alert
   const sosAlert = {
     officer: user.fullName,
@@ -538,11 +547,11 @@ function triggerSOS() {
     time: currentTime ? currentTime.textContent : 'Unknown',
     timestamp: new Date().toISOString()
   };
-  
+
   const alerts = JSON.parse(localStorage.getItem('constableSOSAlerts')) || [];
   alerts.push(sosAlert);
   localStorage.setItem('constableSOSAlerts', JSON.stringify(alerts));
-  
+
   // Show notification
   showNotification('SOS alert sent successfully!', 'success');
 }
@@ -552,27 +561,27 @@ function showNotifications() {
   const alerts = JSON.parse(localStorage.getItem('constableSOSAlerts')) || [];
   const firs = JSON.parse(localStorage.getItem('constableFIRs')) || [];
   const cases = JSON.parse(localStorage.getItem('constableCases')) || [];
-  
+
   let message = 'Recent Notifications:\n\n';
-  
+
   if (alerts.length > 0) {
     message += `🚨 SOS Alerts: ${alerts.length}\n`;
   }
-  
+
   if (firs.length > 0) {
     message += `📄 New FIRs: ${firs.length}\n`;
   }
-  
+
   if (cases.length > 0) {
     message += `📁 Case Updates: ${cases.length}\n`;
   }
-  
+
   if (alerts.length === 0 && firs.length === 0 && cases.length === 0) {
     message += 'No new notifications.';
   }
-  
+
   alert(message);
-  
+
   // Update notification badge
   const totalNotifications = alerts.length + firs.length + cases.length;
   const badge = document.getElementById('notificationBadge');

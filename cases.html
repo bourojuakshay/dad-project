@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Case Updates - Personal Constable Portal</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/sidebar.css">
   <link rel="stylesheet" href="css/cases.css">
 </head>
+
 <body>
   <!-- Header -->
   <header class="dashboard-header">
@@ -128,7 +131,7 @@
       <!-- Cases Header -->
       <section class="cases-header">
         <h2 class="section-title">📁 Case Updates</h2>
-        <div class="header-actions">
+        <div class="cases-page-actions">
           <button class="primary-btn" onclick="openCaseModal()">
             <span class="btn-icon">➕</span>
             <span class="btn-text">New Case</span>
@@ -183,7 +186,7 @@
           <button class="filter-btn" onclick="filterCases('closed')">Closed</button>
           <button class="filter-btn" onclick="filterCases('active')">Active</button>
         </div>
-        
+
         <div class="cases-table-container">
           <table class="cases-table">
             <thead>
@@ -284,5 +287,6 @@
 
   <script src="js/cases.js"></script>
 </body>
+
 </html>
 </task_progress>

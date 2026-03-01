@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FIR Registration - Personal Constable Portal</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/sidebar.css">
   <link rel="stylesheet" href="css/fir.css">
 </head>
+
 <body>
   <!-- Header -->
   <header class="dashboard-header">
@@ -128,7 +131,7 @@
       <!-- FIR Header -->
       <section class="fir-header">
         <h2 class="section-title">📄 FIR Registration</h2>
-        <div class="header-actions">
+        <div class="fir-page-actions">
           <button class="primary-btn" onclick="openFIRModal()">
             <span class="btn-icon">➕</span>
             <span class="btn-text">New FIR</span>
@@ -183,7 +186,7 @@
           <button class="filter-btn" onclick="filterFIRs('registered')">Registered</button>
           <button class="filter-btn" onclick="filterFIRs('urgent')">Urgent</button>
         </div>
-        
+
         <div class="fir-table-container">
           <table class="fir-table">
             <thead>
@@ -296,7 +299,8 @@
             </div>
             <div class="form-group">
               <label for="incidentDescription">Detailed Description</label>
-              <textarea id="incidentDescription" rows="5" required placeholder="Describe the incident in detail..."></textarea>
+              <textarea id="incidentDescription" rows="5" required
+                placeholder="Describe the incident in detail..."></textarea>
             </div>
           </div>
 
@@ -304,11 +308,13 @@
             <h4>Accused Information (if known)</h4>
             <div class="form-group">
               <label for="accusedDetails">Accused Details</label>
-              <textarea id="accusedDetails" rows="3" placeholder="Name, description, any identifying features..."></textarea>
+              <textarea id="accusedDetails" rows="3"
+                placeholder="Name, description, any identifying features..."></textarea>
             </div>
             <div class="form-group">
               <label for="witnessDetails">Witness Information</label>
-              <textarea id="witnessDetails" rows="3" placeholder="Names and contact information of witnesses..."></textarea>
+              <textarea id="witnessDetails" rows="3"
+                placeholder="Names and contact information of witnesses..."></textarea>
             </div>
           </div>
 
@@ -366,5 +372,6 @@
 
   <script src="js/fir.js"></script>
 </body>
+
 </html>
 </task_progress>

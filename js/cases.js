@@ -16,22 +16,22 @@ const caseModal = document.getElementById('caseModal');
 const caseDetailsModal = document.getElementById('caseDetailsModal');
 
 // Initialize Cases Page
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   // Check authentication
   checkAuth();
-  
+
   // Set up event listeners
   setupEventListeners();
-  
+
   // Load user data
   loadUserData();
-  
+
   // Load cases
   loadCases();
-  
+
   // Update statistics
   updateStatistics();
-  
+
   // Set active navigation
   setActiveNav();
 });
@@ -60,37 +60,37 @@ function setupEventListeners() {
   const sidebarToggle = document.getElementById('sidebarToggle');
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('overlay');
-  
+
   if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', function() {
+    sidebarToggle.addEventListener('click', function () {
       sidebar.classList.toggle('active');
       overlay.classList.toggle('active');
     });
   }
-  
+
   if (overlay) {
-    overlay.addEventListener('click', function() {
+    overlay.addEventListener('click', function () {
       sidebar.classList.remove('active');
       overlay.classList.remove('active');
     });
   }
-  
+
   // Close sidebar when window is resized to desktop
-  window.addEventListener('resize', function() {
+  window.addEventListener('resize', function () {
     if (window.innerWidth > 1024) {
       sidebar.classList.remove('active');
       overlay.classList.remove('active');
     }
   });
-  
+
   // Modal events
-  caseModal.addEventListener('click', function(e) {
+  caseModal.addEventListener('click', function (e) {
     if (e.target === caseModal) {
       closeCaseModal();
     }
   });
-  
-  caseDetailsModal.addEventListener('click', function(e) {
+
+  caseDetailsModal.addEventListener('click', function (e) {
     if (e.target === caseDetailsModal) {
       closeCaseDetailsModal();
     }
@@ -105,71 +105,37 @@ function loadUserData() {
   }
 }
 
-// Load cases from localStorage
-function loadCases() {
-  const savedCases = localStorage.getItem('constableCases');
-  if (savedCases) {
-    cases = JSON.parse(savedCases);
-  } else {
-    // Create sample data
-    createSampleCases();
+// Load cases from Backend
+async function loadCases() {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  if (!token) return;
+
+  try {
+    const response = await fetch('/api/cases', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (response.ok) {
+      cases = await response.json();
+    } else {
+      cases = [];
+    }
+  } catch (error) {
+    console.error('Error loading cases:', error);
+    cases = [];
   }
+
   renderCases();
 }
 
-// Create sample cases data
-function createSampleCases() {
-  const sampleCases = [
-    {
-      id: 'CASE-' + Date.now(),
-      caseId: 'CASE/2024/001',
-      caseType: 'Criminal',
-      description: 'Theft of motorcycle from residential area',
-      status: 'Under Investigation',
-      officer: 'Constable Ramesh Kumar',
-      priority: 'High',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: 'CASE-' + (Date.now() + 1),
-      caseId: 'CASE/2024/002',
-      caseType: 'Traffic',
-      description: 'Hit and run incident on main road',
-      status: 'Pending',
-      officer: 'Constable Sunita Devi',
-      priority: 'Urgent',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: 'CASE-' + (Date.now() + 2),
-      caseId: 'CASE/2024/003',
-      caseType: 'Missing Person',
-      description: 'Missing child reported by parents',
-      status: 'Closed',
-      officer: 'Constable Vijay Singh',
-      priority: 'Urgent',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  ];
-  
-  cases = sampleCases;
-  saveCases();
-}
-
-// Save cases to localStorage
-function saveCases() {
-  localStorage.setItem('constableCases', JSON.stringify(cases));
-}
+// Removed saveCases and createSampleCases logic as persistence is now handled by the backend.
 
 // Render cases table
 function renderCases() {
   casesTableBody.innerHTML = '';
-  
+
   const filteredCases = filterAndSearchCases();
-  
+
   if (filteredCases.length === 0) {
     casesTableBody.innerHTML = `
       <tr>
@@ -180,7 +146,7 @@ function renderCases() {
     `;
     return;
   }
-  
+
   filteredCases.forEach(caseItem => {
     const row = document.createElement('tr');
     row.innerHTML = `
@@ -197,14 +163,14 @@ function renderCases() {
     `;
     casesTableBody.appendChild(row);
   });
-  
+
   updateStatistics();
 }
 
 // Filter and search cases
 function filterAndSearchCases() {
   let filtered = cases;
-  
+
   // Filter by status
   if (currentFilter !== 'all') {
     filtered = filtered.filter(caseItem => {
@@ -215,34 +181,34 @@ function filterAndSearchCases() {
       }
     });
   }
-  
+
   // Search
   if (searchQuery.trim() !== '') {
     const query = searchQuery.toLowerCase();
-    filtered = filtered.filter(caseItem => 
+    filtered = filtered.filter(caseItem =>
       caseItem.caseId.toLowerCase().includes(query) ||
       caseItem.caseType.toLowerCase().includes(query) ||
       caseItem.description.toLowerCase().includes(query) ||
       caseItem.officer.toLowerCase().includes(query)
     );
   }
-  
+
   // Sort by date (newest first)
   filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  
+
   return filtered;
 }
 
 // Filter cases
 function filterCases(filter) {
   currentFilter = filter;
-  
+
   // Update filter buttons
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.classList.remove('active');
   });
   event.target.classList.add('active');
-  
+
   renderCases();
 }
 
@@ -255,11 +221,11 @@ function searchCases() {
 // Update statistics
 function updateStatistics() {
   totalCases.textContent = cases.length;
-  
+
   const pending = cases.filter(c => c.status === 'Pending').length;
   const closed = cases.filter(c => c.status === 'Closed').length;
   const active = cases.filter(c => c.status !== 'Closed').length;
-  
+
   pendingCases.textContent = pending;
   closedCases.textContent = closed;
   activeCases.textContent = active;
@@ -282,46 +248,58 @@ function closeCaseModal() {
   }, 300);
 }
 
-// Submit case
-function submitCase() {
-  const formData = {
-    caseType: document.getElementById('caseType').value,
-    description: document.getElementById('caseDescription').value,
-    status: document.getElementById('caseStatus').value,
-    officer: document.getElementById('caseOfficer').value,
-    priority: document.getElementById('casePriority').value
-  };
-  
+// Submit case update
+async function submitCase() {
+  const formData = new FormData();
+  formData.append('firId', document.getElementById('caseType').value); // Using caseType as FIR ID placeholder for this UI
+  formData.append('remarks', document.getElementById('caseDescription').value);
+
   // Validation
-  if (!formData.caseType || !formData.description || !formData.officer) {
-    showNotification('Please fill in all required fields', 'error');
+  if (!formData.get('firId') || !formData.get('remarks')) {
+    showNotification('Please fill in required fields', 'error');
     return;
   }
-  
-  // Create new case
-  const newCase = {
-    id: 'CASE-' + Date.now(),
-    caseId: 'CASE/' + new Date().getFullYear() + '/' + String(cases.length + 1).padStart(3, '0'),
-    ...formData,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  
-  // Add to cases array
-  cases.unshift(newCase);
-  saveCases();
-  renderCases();
-  
-  // Close modal and show success
-  closeCaseModal();
-  showNotification('Case created successfully!', 'success');
+
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  try {
+    const response = await fetch('/api/cases', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (response.ok) {
+      const newCase = await response.json();
+
+      // Ensure UI mock mappings (this maps backend case schema back to frontend table requirements)
+      newCase.caseId = 'CASE/' + new Date().getFullYear() + '/' + String(cases.length + 1).padStart(3, '0');
+      newCase.caseType = 'Follow-up';
+      newCase.status = document.getElementById('caseStatus').value || 'Pending';
+      newCase.priority = document.getElementById('casePriority').value || 'Normal';
+      newCase.officer = document.getElementById('caseOfficer').value || 'Self';
+      newCase.description = document.getElementById('caseDescription').value;
+      newCase.updatedAt = newCase.createdAt;
+
+      cases.unshift(newCase);
+      renderCases();
+      closeCaseModal();
+      showNotification('Case updated successfully!', 'success');
+    } else {
+      showNotification('Failed to submit case update.', 'error');
+    }
+  } catch (error) {
+    console.error('Submit error:', error);
+    showNotification('Network error.', 'error');
+  }
 }
 
 // View case details
 function viewCaseDetails(caseId) {
   const caseItem = cases.find(c => c.id === caseId);
   if (!caseItem) return;
-  
+
   const content = document.getElementById('caseDetailsContent');
   content.innerHTML = `
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -363,7 +341,7 @@ function viewCaseDetails(caseId) {
       <div class="detail-value">${caseItem.officer}</div>
     </div>
   `;
-  
+
   caseDetailsModal.style.display = 'flex';
   setTimeout(() => {
     caseDetailsModal.classList.add('active');
@@ -382,24 +360,26 @@ function closeCaseDetailsModal() {
 function editCase(caseId) {
   const caseItem = cases.find(c => c.id === caseId);
   if (!caseItem) return;
-  
+
   // Pre-fill form with case data
   document.getElementById('caseType').value = caseItem.caseType;
   document.getElementById('caseDescription').value = caseItem.description;
   document.getElementById('caseStatus').value = caseItem.status;
   document.getElementById('caseOfficer').value = caseItem.officer;
   document.getElementById('casePriority').value = caseItem.priority;
-  
+
   // Change submit function to update
   const submitBtn = document.querySelector('.modal-footer .primary-btn');
   submitBtn.onclick = () => updateCase(caseId);
   submitBtn.textContent = 'Update Case';
-  
+
   openCaseModal();
 }
 
 // Update case
-function updateCase(caseId) {
+async function updateCase(caseId) {
+  // Mocking the update for backend as backend doesn't have a PUT /api/cases/:id currently
+  // We'll update array locally to simulate
   const formData = {
     caseType: document.getElementById('caseType').value,
     description: document.getElementById('caseDescription').value,
@@ -407,14 +387,12 @@ function updateCase(caseId) {
     officer: document.getElementById('caseOfficer').value,
     priority: document.getElementById('casePriority').value
   };
-  
-  // Validation
+
   if (!formData.caseType || !formData.description || !formData.officer) {
     showNotification('Please fill in all required fields', 'error');
     return;
   }
-  
-  // Find and update case
+
   const index = cases.findIndex(c => c.id === caseId);
   if (index > -1) {
     cases[index] = {
@@ -422,17 +400,13 @@ function updateCase(caseId) {
       ...formData,
       updatedAt: new Date().toISOString()
     };
-    
-    saveCases();
     renderCases();
-    
-    // Reset submit function
+
     const submitBtn = document.querySelector('.modal-footer .primary-btn');
     submitBtn.onclick = submitCase;
     submitBtn.textContent = 'Create Case';
-    
     closeCaseModal();
-    showNotification('Case updated successfully!', 'success');
+    showNotification('Case mocked update successfully!', 'success');
   }
 }
 
@@ -440,7 +414,7 @@ function updateCase(caseId) {
 function deleteCase(caseId) {
   if (confirm('Are you sure you want to delete this case?')) {
     cases = cases.filter(c => c.id !== caseId);
-    saveCases();
+    // Real implementation would call DELETE /api/cases/:id
     renderCases();
     showNotification('Case deleted successfully!', 'success');
   }
@@ -458,7 +432,7 @@ function updateCaseStatus() {
 function setActiveNav() {
   const currentPage = window.location.pathname.split('/').pop();
   const currentLink = document.querySelector(`.nav-link[href="${currentPage}"]`);
-  
+
   if (currentLink) {
     currentLink.classList.add('active');
   }
@@ -470,7 +444,7 @@ function showNotification(message, type = 'info') {
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
   notification.textContent = message;
-  
+
   // Add styles
   notification.style.position = 'fixed';
   notification.style.bottom = '20px';
@@ -484,16 +458,16 @@ function showNotification(message, type = 'info') {
   notification.style.opacity = '0';
   notification.style.transform = 'translateY(20px)';
   notification.style.transition = 'all 0.3s ease';
-  
+
   // Add to DOM
   document.body.appendChild(notification);
-  
+
   // Animate in
   setTimeout(() => {
     notification.style.opacity = '1';
     notification.style.transform = 'translateY(0)';
   }, 10);
-  
+
   // Remove after 3 seconds
   setTimeout(() => {
     notification.style.opacity = '0';
@@ -508,17 +482,17 @@ function showNotification(message, type = 'info') {
 function triggerSOS() {
   const user = getCurrentUser();
   if (!user) return;
-  
+
   const message = `🚨 SOS ALERT 🚨\n\nOfficer: ${user.fullName}\nBadge ID: ${user.badgeId}\nStation: ${user.station}\nLocation: ${currentLocation ? currentLocation.textContent : 'Unknown'}\nTime: ${currentTime ? currentTime.textContent : 'Unknown'}\n\nThis is an emergency alert!`;
-  
+
   // Show alert
   alert(message);
-  
+
   // Try to call emergency numbers
   if (confirm('Do you want to call emergency services?')) {
     window.open('tel:112', '_self');
   }
-  
+
   // Store SOS alert
   const sosAlert = {
     officer: user.fullName,
@@ -528,11 +502,11 @@ function triggerSOS() {
     time: currentTime ? currentTime.textContent : 'Unknown',
     timestamp: new Date().toISOString()
   };
-  
+
   const alerts = JSON.parse(localStorage.getItem('constableSOSAlerts')) || [];
   alerts.push(sosAlert);
   localStorage.setItem('constableSOSAlerts', JSON.stringify(alerts));
-  
+
   // Show notification
   showNotification('SOS alert sent successfully!', 'success');
 }
@@ -542,27 +516,27 @@ function showNotifications() {
   const alerts = JSON.parse(localStorage.getItem('constableSOSAlerts')) || [];
   const firs = JSON.parse(localStorage.getItem('constableFIRs')) || [];
   const cases = JSON.parse(localStorage.getItem('constableCases')) || [];
-  
+
   let message = 'Recent Notifications:\n\n';
-  
+
   if (alerts.length > 0) {
     message += `🚨 SOS Alerts: ${alerts.length}\n`;
   }
-  
+
   if (firs.length > 0) {
     message += `📄 New FIRs: ${firs.length}\n`;
   }
-  
+
   if (cases.length > 0) {
     message += `📁 Case Updates: ${cases.length}\n`;
   }
-  
+
   if (alerts.length === 0 && firs.length === 0 && cases.length === 0) {
     message += 'No new notifications.';
   }
-  
+
   alert(message);
-  
+
   // Update notification badge
   const totalNotifications = alerts.length + firs.length + cases.length;
   const badge = document.getElementById('notificationBadge');

@@ -16,22 +16,22 @@ const firModal = document.getElementById('firModal');
 const firDetailsModal = document.getElementById('firDetailsModal');
 
 // Initialize FIR Page
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   // Check authentication
   checkAuth();
-  
+
   // Set up event listeners
   setupEventListeners();
-  
+
   // Load user data
   loadUserData();
-  
+
   // Load FIRs
   loadFIRs();
-  
+
   // Update statistics
   updateStatistics();
-  
+
   // Set active navigation
   setActiveNav();
 });
@@ -60,37 +60,37 @@ function setupEventListeners() {
   const sidebarToggle = document.getElementById('sidebarToggle');
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('overlay');
-  
+
   if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', function() {
+    sidebarToggle.addEventListener('click', function () {
       sidebar.classList.toggle('active');
       overlay.classList.toggle('active');
     });
   }
-  
+
   if (overlay) {
-    overlay.addEventListener('click', function() {
+    overlay.addEventListener('click', function () {
       sidebar.classList.remove('active');
       overlay.classList.remove('active');
     });
   }
-  
+
   // Close sidebar when window is resized to desktop
-  window.addEventListener('resize', function() {
+  window.addEventListener('resize', function () {
     if (window.innerWidth > 1024) {
       sidebar.classList.remove('active');
       overlay.classList.remove('active');
     }
   });
-  
+
   // Modal events
-  firModal.addEventListener('click', function(e) {
+  firModal.addEventListener('click', function (e) {
     if (e.target === firModal) {
       closeFIRModal();
     }
   });
-  
-  firDetailsModal.addEventListener('click', function(e) {
+
+  firDetailsModal.addEventListener('click', function (e) {
     if (e.target === firDetailsModal) {
       closeFIRDetailsModal();
     }
@@ -105,113 +105,37 @@ function loadUserData() {
   }
 }
 
-// Load FIRs from localStorage
-function loadFIRs() {
-  const savedFIRs = localStorage.getItem('constableFIRs');
-  if (savedFIRs) {
-    firs = JSON.parse(savedFIRs);
-  } else {
-    // Create sample data
-    createSampleFIRs();
+// Load FIRs from Backend
+async function loadFIRs() {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  if (!token) return;
+
+  try {
+    const response = await fetch('/api/firs', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (response.ok) {
+      firs = await response.json();
+    } else {
+      firs = [];
+    }
+  } catch (error) {
+    console.error('Error loading FIRs:', error);
+    firs = [];
   }
+
   renderFIRs();
 }
 
-// Create sample FIRs data
-function createSampleFIRs() {
-  const sampleFIRs = [
-    {
-      id: 'FIR-' + Date.now(),
-      firNumber: 'FIR/2024/001',
-      complainantName: 'Ramesh Kumar',
-      complainantAge: 35,
-      complainantGender: 'Male',
-      complainantOccupation: 'Shopkeeper',
-      complainantAddress: '123 Main Street, Dichpally',
-      complainantPhone: '9876543210',
-      complainantAadhaar: '123456789012',
-      offenceType: 'Theft',
-      dateOfIncident: '2024-01-15',
-      timeOfIncident: '14:30',
-      incidentLocation: 'Outside residence, Main Street',
-      incidentDescription: 'Bicycle stolen from outside my house last night',
-      accusedDetails: 'Unknown male, approximately 25-30 years old',
-      witnessDetails: 'Neighbor saw suspicious person around 10 PM',
-      propertyDetails: 'Hero Splendor motorcycle, red color, registration number TS07AB1234',
-      estimatedValue: 50000,
-      recoveryStatus: 'Not Recovered',
-      priority: 'Normal',
-      status: 'Pending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: 'FIR-' + (Date.now() + 1),
-      firNumber: 'FIR/2024/002',
-      complainantName: 'Sunita Devi',
-      complainantAge: 28,
-      complainantGender: 'Female',
-      complainantOccupation: 'Teacher',
-      complainantAddress: '456 Market Road, Dichpally',
-      complainantPhone: '8765432109',
-      complainantAadhaar: '234567890123',
-      offenceType: 'Assault',
-      dateOfIncident: '2024-01-16',
-      timeOfIncident: '18:45',
-      incidentLocation: 'Dichpally Market',
-      incidentDescription: 'Physical assault during argument at market',
-      accusedDetails: 'Unknown male, wearing blue shirt, approximately 5\'8"',
-      witnessDetails: 'Market vendor witnessed the incident',
-      propertyDetails: 'Mobile phone damaged during assault',
-      estimatedValue: 20000,
-      recoveryStatus: 'Not Recovered',
-      priority: 'High',
-      status: 'Pending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: 'FIR-' + (Date.now() + 2),
-      firNumber: 'FIR/2024/003',
-      complainantName: 'Vijay Singh',
-      complainantAge: 42,
-      complainantGender: 'Male',
-      complainantOccupation: 'Businessman',
-      complainantAddress: '789 Station Road, Dichpally',
-      complainantPhone: '7654321098',
-      complainantAadhaar: '345678901234',
-      offenceType: 'Fraud',
-      dateOfIncident: '2024-01-17',
-      timeOfIncident: '11:20',
-      incidentLocation: 'Online',
-      incidentDescription: 'Online shopping fraud - paid but no delivery',
-      accusedDetails: 'Unknown, fake online store',
-      witnessDetails: 'No witnesses',
-      propertyDetails: 'Payment made via UPI, amount Rs. 15,000',
-      estimatedValue: 15000,
-      recoveryStatus: 'Not Recovered',
-      priority: 'Urgent',
-      status: 'Registered',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  ];
-  
-  firs = sampleFIRs;
-  saveFIRs();
-}
-
-// Save FIRs to localStorage
-function saveFIRs() {
-  localStorage.setItem('constableFIRs', JSON.stringify(firs));
-}
+// Removed createSampleFIRs and saveFIRs as the backend handles persistence and mocking now.
 
 // Render FIRs table
 function renderFIRs() {
   firTableBody.innerHTML = '';
-  
+
   const filteredFIRs = filterAndSearchFIRs();
-  
+
   if (filteredFIRs.length === 0) {
     firTableBody.innerHTML = `
       <tr>
@@ -222,7 +146,7 @@ function renderFIRs() {
     `;
     return;
   }
-  
+
   filteredFIRs.forEach(fir => {
     const row = document.createElement('tr');
     row.innerHTML = `
@@ -239,14 +163,14 @@ function renderFIRs() {
     `;
     firTableBody.appendChild(row);
   });
-  
+
   updateStatistics();
 }
 
 // Filter and search FIRs
 function filterAndSearchFIRs() {
   let filtered = firs;
-  
+
   // Filter by status
   if (currentFilter !== 'all') {
     filtered = filtered.filter(fir => {
@@ -257,11 +181,11 @@ function filterAndSearchFIRs() {
       }
     });
   }
-  
+
   // Search
   if (searchQuery.trim() !== '') {
     const query = searchQuery.toLowerCase();
-    filtered = filtered.filter(fir => 
+    filtered = filtered.filter(fir =>
       fir.firNumber.toLowerCase().includes(query) ||
       fir.complainantName.toLowerCase().includes(query) ||
       fir.offenceType.toLowerCase().includes(query) ||
@@ -269,23 +193,23 @@ function filterAndSearchFIRs() {
       fir.incidentLocation.toLowerCase().includes(query)
     );
   }
-  
+
   // Sort by date (newest first)
   filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  
+
   return filtered;
 }
 
 // Filter FIRs
 function filterFIRs(filter) {
   currentFilter = filter;
-  
+
   // Update filter buttons
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.classList.remove('active');
   });
   event.target.classList.add('active');
-  
+
   renderFIRs();
 }
 
@@ -298,11 +222,11 @@ function searchFIRs() {
 // Update statistics
 function updateStatistics() {
   totalFIRs.textContent = firs.length;
-  
+
   const pending = firs.filter(f => f.status === 'Pending').length;
   const registered = firs.filter(f => f.status === 'Registered').length;
   const urgent = firs.filter(f => f.priority === 'Urgent').length;
-  
+
   pendingFIRs.textContent = pending;
   registeredFIRs.textContent = registered;
   urgentFIRs.textContent = urgent;
@@ -326,7 +250,7 @@ function closeFIRModal() {
 }
 
 // Submit FIR
-function submitFIR() {
+async function submitFIR() {
   const formData = {
     complainantName: document.getElementById('complainantName').value,
     complainantAge: parseInt(document.getElementById('complainantAge').value),
@@ -347,37 +271,55 @@ function submitFIR() {
     recoveryStatus: document.getElementById('recoveryStatus').value,
     priority: document.getElementById('firPriority').value
   };
-  
+
   // Validation
-  if (!formData.complainantName || !formData.complainantAge || !formData.complainantGender || 
-      !formData.complainantOccupation || !formData.complainantAddress || !formData.complainantPhone ||
-      !formData.offenceType || !formData.dateOfIncident || !formData.timeOfIncident || 
-      !formData.incidentLocation || !formData.incidentDescription) {
+  if (!formData.complainantName || !formData.complainantAge || !formData.complainantGender ||
+    !formData.complainantOccupation || !formData.complainantAddress || !formData.complainantPhone ||
+    !formData.offenceType || !formData.dateOfIncident || !formData.timeOfIncident ||
+    !formData.incidentLocation || !formData.incidentDescription) {
     showNotification('Please fill in all required fields', 'error');
     return;
   }
-  
-  // Generate FIR number
+
+  // Generate FIR number locally to send to backend
   const firNumber = generateFIRNumber();
-  
-  // Create new FIR
-  const newFIR = {
-    id: 'FIR-' + Date.now(),
-    firNumber: firNumber,
-    ...formData,
-    status: 'Pending',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  
-  // Add to FIRs array
-  firs.unshift(newFIR);
-  saveFIRs();
-  renderFIRs();
-  
-  // Close modal and show success
-  closeFIRModal();
-  showNotification('FIR registered successfully!', 'success');
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+  try {
+    const response = await fetch('/api/firs', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ...formData,
+        description: formData.incidentDescription,
+        location: formData.incidentLocation,
+        incidentDate: formData.dateOfIncident,
+        firNumber: firNumber,
+        status: 'Registered',
+        priority: formData.priority
+      })
+    });
+
+    if (response.ok) {
+      const newFIR = await response.json();
+
+      // Add full frontend UI properties mapping
+      Object.assign(newFIR, formData);
+
+      firs.unshift(newFIR);
+      renderFIRs();
+      closeFIRModal();
+      showNotification('FIR registered successfully!', 'success');
+    } else {
+      showNotification('Failed to register FIR on server.', 'error');
+    }
+  } catch (error) {
+    console.error('FIR registration error:', error);
+    showNotification('Network error.', 'error');
+  }
 }
 
 // Generate FIR number
@@ -393,7 +335,7 @@ function generateFIRNumber() {
 function viewFIRDetails(firId) {
   const fir = firs.find(f => f.id === firId);
   if (!fir) return;
-  
+
   const content = document.getElementById('firDetailsContent');
   content.innerHTML = `
     <div class="fir-details">
@@ -513,7 +455,7 @@ function viewFIRDetails(firId) {
       </div>
     </div>
   `;
-  
+
   firDetailsModal.style.display = 'flex';
   setTimeout(() => {
     firDetailsModal.classList.add('active');
@@ -532,7 +474,7 @@ function closeFIRDetailsModal() {
 function editFIR(firId) {
   const fir = firs.find(f => f.id === firId);
   if (!fir) return;
-  
+
   // Pre-fill form with FIR data
   document.getElementById('complainantName').value = fir.complainantName;
   document.getElementById('complainantAge').value = fir.complainantAge;
@@ -552,17 +494,17 @@ function editFIR(firId) {
   document.getElementById('estimatedValue').value = fir.estimatedValue;
   document.getElementById('recoveryStatus').value = fir.recoveryStatus;
   document.getElementById('firPriority').value = fir.priority;
-  
+
   // Change submit function to update
   const submitBtn = document.querySelector('.modal-footer .primary-btn');
   submitBtn.onclick = () => updateFIR(firId);
   submitBtn.textContent = 'Update FIR';
-  
+
   openFIRModal();
 }
 
 // Update FIR
-function updateFIR(firId) {
+async function updateFIR(firId) {
   const formData = {
     complainantName: document.getElementById('complainantName').value,
     complainantAge: parseInt(document.getElementById('complainantAge').value),
@@ -583,35 +525,53 @@ function updateFIR(firId) {
     recoveryStatus: document.getElementById('recoveryStatus').value,
     priority: document.getElementById('firPriority').value
   };
-  
+
   // Validation
-  if (!formData.complainantName || !formData.complainantAge || !formData.complainantGender || 
-      !formData.complainantOccupation || !formData.complainantAddress || !formData.complainantPhone ||
-      !formData.offenceType || !formData.dateOfIncident || !formData.timeOfIncident || 
-      !formData.incidentLocation || !formData.incidentDescription) {
+  if (!formData.complainantName || !formData.complainantAge || !formData.complainantGender ||
+    !formData.complainantOccupation || !formData.complainantAddress || !formData.complainantPhone ||
+    !formData.offenceType || !formData.dateOfIncident || !formData.timeOfIncident ||
+    !formData.incidentLocation || !formData.incidentDescription) {
     showNotification('Please fill in all required fields', 'error');
     return;
   }
-  
-  // Find and update FIR
-  const index = firs.findIndex(f => f.id === firId);
-  if (index > -1) {
-    firs[index] = {
-      ...firs[index],
-      ...formData,
-      updatedAt: new Date().toISOString()
-    };
-    
-    saveFIRs();
-    renderFIRs();
-    
-    // Reset submit function
-    const submitBtn = document.querySelector('.modal-footer .primary-btn');
-    submitBtn.onclick = submitFIR;
-    submitBtn.textContent = 'Register FIR';
-    
-    closeFIRModal();
-    showNotification('FIR updated successfully!', 'success');
+
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  try {
+    const response = await fetch(`/api/firs/${firId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ...formData,
+        description: formData.incidentDescription,
+        location: formData.incidentLocation,
+        incidentDate: formData.dateOfIncident
+      })
+    });
+
+    if (response.ok) {
+      const index = firs.findIndex(f => f.id === firId);
+      if (index > -1) {
+        firs[index] = {
+          ...firs[index],
+          ...formData,
+          updatedAt: new Date().toISOString()
+        };
+        renderFIRs();
+        const submitBtn = document.querySelector('.modal-footer .primary-btn');
+        submitBtn.onclick = submitFIR;
+        submitBtn.textContent = 'Register FIR';
+        closeFIRModal();
+        showNotification('FIR updated successfully!', 'success');
+      }
+    } else {
+      showNotification('Failed to update FIR on server.', 'error');
+    }
+  } catch (error) {
+    console.error('FIR update error:', error);
+    showNotification('Network error.', 'error');
   }
 }
 
@@ -619,9 +579,9 @@ function updateFIR(firId) {
 function deleteFIR(firId) {
   if (confirm('Are you sure you want to delete this FIR?')) {
     firs = firs.filter(f => f.id !== firId);
-    saveFIRs();
+    // Note: there is no DELETE /api/firs/:id endpoint provided out of the box so mocking client side view.
     renderFIRs();
-    showNotification('FIR deleted successfully!', 'success');
+    showNotification('FIR mock deleted successfully!', 'success');
   }
 }
 
@@ -637,7 +597,7 @@ function updateFIRStatus() {
 function setActiveNav() {
   const currentPage = window.location.pathname.split('/').pop();
   const currentLink = document.querySelector(`.nav-link[href="${currentPage}"]`);
-  
+
   if (currentLink) {
     currentLink.classList.add('active');
   }
@@ -649,7 +609,7 @@ function showNotification(message, type = 'info') {
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
   notification.textContent = message;
-  
+
   // Add styles
   notification.style.position = 'fixed';
   notification.style.bottom = '20px';
@@ -663,16 +623,16 @@ function showNotification(message, type = 'info') {
   notification.style.opacity = '0';
   notification.style.transform = 'translateY(20px)';
   notification.style.transition = 'all 0.3s ease';
-  
+
   // Add to DOM
   document.body.appendChild(notification);
-  
+
   // Animate in
   setTimeout(() => {
     notification.style.opacity = '1';
     notification.style.transform = 'translateY(0)';
   }, 10);
-  
+
   // Remove after 3 seconds
   setTimeout(() => {
     notification.style.opacity = '0';
@@ -687,17 +647,17 @@ function showNotification(message, type = 'info') {
 function triggerSOS() {
   const user = getCurrentUser();
   if (!user) return;
-  
+
   const message = `🚨 SOS ALERT 🚨\n\nOfficer: ${user.fullName}\nBadge ID: ${user.badgeId}\nStation: ${user.station}\nLocation: ${currentLocation ? currentLocation.textContent : 'Unknown'}\nTime: ${currentTime ? currentTime.textContent : 'Unknown'}\n\nThis is an emergency alert!`;
-  
+
   // Show alert
   alert(message);
-  
+
   // Try to call emergency numbers
   if (confirm('Do you want to call emergency services?')) {
     window.open('tel:112', '_self');
   }
-  
+
   // Store SOS alert
   const sosAlert = {
     officer: user.fullName,
@@ -707,11 +667,11 @@ function triggerSOS() {
     time: currentTime ? currentTime.textContent : 'Unknown',
     timestamp: new Date().toISOString()
   };
-  
+
   const alerts = JSON.parse(localStorage.getItem('constableSOSAlerts')) || [];
   alerts.push(sosAlert);
   localStorage.setItem('constableSOSAlerts', JSON.stringify(alerts));
-  
+
   // Show notification
   showNotification('SOS alert sent successfully!', 'success');
 }
@@ -721,27 +681,27 @@ function showNotifications() {
   const alerts = JSON.parse(localStorage.getItem('constableSOSAlerts')) || [];
   const firs = JSON.parse(localStorage.getItem('constableFIRs')) || [];
   const cases = JSON.parse(localStorage.getItem('constableCases')) || [];
-  
+
   let message = 'Recent Notifications:\n\n';
-  
+
   if (alerts.length > 0) {
     message += `🚨 SOS Alerts: ${alerts.length}\n`;
   }
-  
+
   if (firs.length > 0) {
     message += `📄 New FIRs: ${firs.length}\n`;
   }
-  
+
   if (cases.length > 0) {
     message += `📁 Case Updates: ${cases.length}\n`;
   }
-  
+
   if (alerts.length === 0 && firs.length === 0 && cases.length === 0) {
     message += 'No new notifications.';
   }
-  
+
   alert(message);
-  
+
   // Update notification badge
   const totalNotifications = alerts.length + firs.length + cases.length;
   const badge = document.getElementById('notificationBadge');

@@ -12,19 +12,19 @@ const dataCollectionToggle = document.getElementById('dataCollectionToggle');
 const autoLogoutSelect = document.getElementById('autoLogoutSelect');
 
 // Initialize Settings Page
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   // Check authentication
   checkAuth();
-  
+
   // Set up event listeners
   setupEventListeners();
-  
+
   // Load user data
   loadUserData();
-  
+
   // Load settings
   loadSettings();
-  
+
   // Set active navigation
   setActiveNav();
 });
@@ -53,29 +53,29 @@ function setupEventListeners() {
   const sidebarToggle = document.getElementById('sidebarToggle');
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('overlay');
-  
+
   if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', function() {
+    sidebarToggle.addEventListener('click', function () {
       sidebar.classList.toggle('active');
       overlay.classList.toggle('active');
     });
   }
-  
+
   if (overlay) {
-    overlay.addEventListener('click', function() {
+    overlay.addEventListener('click', function () {
       sidebar.classList.remove('active');
       overlay.classList.remove('active');
     });
   }
-  
+
   // Close sidebar when window is resized to desktop
-  window.addEventListener('resize', function() {
+  window.addEventListener('resize', function () {
     if (window.innerWidth > 1024) {
       sidebar.classList.remove('active');
       overlay.classList.remove('active');
     }
   });
-  
+
   // Password strength checker
   const newPasswordInput = document.getElementById('newPassword');
   if (newPasswordInput) {
@@ -99,23 +99,23 @@ function loadSettings() {
   if (darkMode) {
     document.body.classList.add('dark');
   }
-  
+
   // Animations
   const animationsEnabled = localStorage.getItem('constableAnimations') !== 'false';
   animationsToggle.checked = animationsEnabled;
   if (!animationsEnabled) {
     document.body.style.transition = 'none';
   }
-  
+
   // Privacy settings
   locationToggle.checked = localStorage.getItem('constableLocationAccess') !== 'false';
   cameraToggle.checked = localStorage.getItem('constableCameraAccess') !== 'false';
   dataCollectionToggle.checked = localStorage.getItem('constableDataCollection') === 'true';
-  
+
   // Auto logout
   const autoLogout = localStorage.getItem('constableAutoLogout') || '15';
   autoLogoutSelect.value = autoLogout;
-  
+
   // Set up auto logout timer
   setupAutoLogout(autoLogout);
 }
@@ -140,35 +140,35 @@ function clearPasswordForm() {
 function checkPasswordStrength() {
   const password = document.getElementById('newPassword').value;
   const strengthIndicator = document.getElementById('passwordStrength');
-  
+
   if (!password) {
     strengthIndicator.innerHTML = '';
     return;
   }
-  
+
   let strength = 0;
   let feedback = [];
-  
+
   // Check length
   if (password.length >= 8) strength++;
   else feedback.push('At least 8 characters');
-  
+
   // Check for uppercase
   if (/[A-Z]/.test(password)) strength++;
   else feedback.push('Uppercase letter');
-  
+
   // Check for lowercase
   if (/[a-z]/.test(password)) strength++;
   else feedback.push('Lowercase letter');
-  
+
   // Check for numbers
   if (/[0-9]/.test(password)) strength++;
   else feedback.push('Number');
-  
+
   // Check for special characters
   if (/[^A-Za-z0-9]/.test(password)) strength++;
   else feedback.push('Special character');
-  
+
   // Display strength
   if (strength < 3) {
     strengthIndicator.className = 'password-strength weak';
@@ -185,45 +185,45 @@ function checkPasswordStrength() {
 // Change password
 function changePassword(e) {
   e.preventDefault();
-  
+
   const user = getCurrentUser();
   if (!user) return;
-  
+
   const currentPassword = document.getElementById('currentPassword').value;
   const newPassword = document.getElementById('newPassword').value;
   const confirmNewPassword = document.getElementById('confirmNewPassword').value;
-  
+
   // Validation
   if (currentPassword !== user.password) {
     showError(passwordError, 'Current password is incorrect');
     return;
   }
-  
+
   if (newPassword.length < 6) {
     showError(passwordError, 'New password must be at least 6 characters long');
     return;
   }
-  
+
   if (newPassword === currentPassword) {
     showError(passwordError, 'New password must be different from current password');
     return;
   }
-  
+
   if (newPassword !== confirmNewPassword) {
     showError(passwordError, 'Passwords do not match');
     return;
   }
-  
+
   // Update password
   const updatedUser = { ...user, password: newPassword, passwordChangedAt: new Date().toISOString() };
-  
+
   // Update storage
   if (sessionStorage.getItem('constableCurrentUser')) {
     sessionStorage.setItem('constableCurrentUser', JSON.stringify(updatedUser));
   } else {
     localStorage.setItem('constableCurrentUser', JSON.stringify(updatedUser));
   }
-  
+
   // Update current user in memory
   const currentUserKey = sessionStorage.getItem('constableCurrentUser') ? 'constableCurrentUser' : 'constableCurrentUser';
   if (sessionStorage.getItem(currentUserKey)) {
@@ -231,10 +231,10 @@ function changePassword(e) {
   } else {
     localStorage.setItem(currentUserKey, JSON.stringify(updatedUser));
   }
-  
+
   // Show success message
   showSuccess(passwordError, 'Password updated successfully!');
-  
+
   // Clear form and hide
   setTimeout(() => {
     togglePasswordForm();
@@ -245,7 +245,7 @@ function changePassword(e) {
 function toggleDarkMode() {
   const enabled = darkModeToggle.checked;
   localStorage.setItem('constableDarkMode', enabled);
-  
+
   if (enabled) {
     document.body.classList.add('dark');
   } else {
@@ -257,7 +257,7 @@ function toggleDarkMode() {
 function toggleAnimations() {
   const enabled = animationsToggle.checked;
   localStorage.setItem('constableAnimations', enabled);
-  
+
   if (enabled) {
     document.body.style.transition = '';
   } else {
@@ -269,15 +269,15 @@ function toggleAnimations() {
 function toggleLocationAccess() {
   const enabled = locationToggle.checked;
   localStorage.setItem('constableLocationAccess', enabled);
-  
+
   if (enabled) {
     // Request location permission
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        function() {
+        function () {
           showNotification('Location access granted', 'success');
         },
-        function() {
+        function () {
           showNotification('Location access denied', 'error');
           locationToggle.checked = false;
           localStorage.setItem('constableLocationAccess', 'false');
@@ -295,15 +295,15 @@ function toggleLocationAccess() {
 function toggleCameraAccess() {
   const enabled = cameraToggle.checked;
   localStorage.setItem('constableCameraAccess', enabled);
-  
+
   if (enabled) {
     // Request camera permission
     navigator.mediaDevices.getUserMedia({ video: true })
-      .then(function(stream) {
+      .then(function (stream) {
         stream.getTracks().forEach(track => track.stop());
         showNotification('Camera access granted', 'success');
       })
-      .catch(function(err) {
+      .catch(function (err) {
         showNotification('Camera access denied', 'error');
         cameraToggle.checked = false;
         localStorage.setItem('constableCameraAccess', 'false');
@@ -315,7 +315,7 @@ function toggleCameraAccess() {
 function toggleDataCollection() {
   const enabled = dataCollectionToggle.checked;
   localStorage.setItem('constableDataCollection', enabled);
-  
+
   if (enabled) {
     showNotification('Anonymous data collection enabled', 'success');
   } else {
@@ -328,7 +328,7 @@ function setAutoLogout() {
   const minutes = parseInt(autoLogoutSelect.value);
   localStorage.setItem('constableAutoLogout', minutes);
   setupAutoLogout(minutes);
-  
+
   if (minutes === 0) {
     showNotification('Auto logout disabled', 'info');
   } else {
@@ -342,11 +342,11 @@ function setupAutoLogout(minutes) {
   if (window.logoutTimer) {
     clearTimeout(window.logoutTimer);
   }
-  
+
   if (minutes === 0) return;
-  
+
   const logoutTime = minutes * 60 * 1000; // Convert to milliseconds
-  
+
   function setLogoutTimer() {
     window.logoutTimer = setTimeout(() => {
       showNotification('Auto logout in 30 seconds', 'warning');
@@ -355,7 +355,7 @@ function setupAutoLogout(minutes) {
       }, 30000);
     }, logoutTime - 30000);
   }
-  
+
   // Reset timer on user activity
   const events = ['mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'];
   events.forEach(event => {
@@ -364,19 +364,46 @@ function setupAutoLogout(minutes) {
       setLogoutTimer();
     });
   });
-  
+
   setLogoutTimer();
 }
 
 // Backup data
-function backupData() {
+async function backupData() {
+  showNotification('Preparing backup...', 'info');
+
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const headers = { 'Authorization': `Bearer ${token}` };
+
+  let firs = [];
+  let cases = [];
+  let locations = [];
+  let complaints = [];
+
+  try {
+    if (token) {
+      const [firsRes, casesRes, locsRes, compRes] = await Promise.all([
+        fetch('/api/firs', { headers }),
+        fetch('/api/cases', { headers }),
+        fetch('/api/locations', { headers }),
+        fetch('/api/complaints', { headers }).catch(() => ({ ok: false })) // Graceful fail if no endpoint
+      ]);
+
+      if (firsRes.ok) firs = await firsRes.json();
+      if (casesRes.ok) cases = await casesRes.json();
+      if (locsRes.ok) locations = await locsRes.json();
+      if (compRes && compRes.ok) complaints = await compRes.json();
+    }
+  } catch (error) {
+    console.error('Error fetching backup data from server:', error);
+  }
+
   const data = {
-    users: JSON.parse(localStorage.getItem('constableUsers')) || [],
     currentUser: getCurrentUser(),
-    firs: JSON.parse(localStorage.getItem('constableFIRs')) || [],
-    cases: JSON.parse(localStorage.getItem('constableCases')) || [],
-    locations: JSON.parse(localStorage.getItem('constableLocations')) || [],
-    photos: JSON.parse(localStorage.getItem('constablePhotos')) || [],
+    firs: firs,
+    cases: cases,
+    locations: locations,
+    complaints: complaints,
     settings: {
       darkMode: localStorage.getItem('constableDarkMode'),
       animations: localStorage.getItem('constableAnimations'),
@@ -387,7 +414,7 @@ function backupData() {
     },
     backupDate: new Date().toISOString()
   };
-  
+
   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
   const downloadAnchorNode = document.createElement('a');
   downloadAnchorNode.setAttribute("href", dataStr);
@@ -395,7 +422,7 @@ function backupData() {
   document.body.appendChild(downloadAnchorNode);
   downloadAnchorNode.click();
   downloadAnchorNode.remove();
-  
+
   showNotification('Backup created successfully!', 'success');
 }
 
@@ -406,7 +433,7 @@ function clearCache() {
     localStorage.removeItem('constableLocations');
     localStorage.removeItem('constablePhotos');
     localStorage.removeItem('constableSOSAlerts');
-    
+
     // Clear browser cache
     if ('caches' in window) {
       caches.keys().then(cacheNames => {
@@ -415,7 +442,7 @@ function clearCache() {
         });
       });
     }
-    
+
     showNotification('Cache cleared successfully!', 'success');
   }
 }
@@ -452,7 +479,7 @@ function showHelp() {
 function setActiveNav() {
   const currentPage = window.location.pathname.split('/').pop();
   const currentLink = document.querySelector(`.nav-link[href="${currentPage}"]`);
-  
+
   if (currentLink) {
     currentLink.classList.add('active');
   }
@@ -477,7 +504,7 @@ function showNotification(message, type = 'info') {
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
   notification.textContent = message;
-  
+
   // Add styles
   notification.style.position = 'fixed';
   notification.style.bottom = '20px';
@@ -491,16 +518,16 @@ function showNotification(message, type = 'info') {
   notification.style.opacity = '0';
   notification.style.transform = 'translateY(20px)';
   notification.style.transition = 'all 0.3s ease';
-  
+
   // Add to DOM
   document.body.appendChild(notification);
-  
+
   // Animate in
   setTimeout(() => {
     notification.style.opacity = '1';
     notification.style.transform = 'translateY(0)';
   }, 10);
-  
+
   // Remove after 3 seconds
   setTimeout(() => {
     notification.style.opacity = '0';
@@ -516,7 +543,7 @@ function adjustFontSize(change) {
   const root = document.documentElement;
   const currentSize = parseFloat(getComputedStyle(root).fontSize);
   const newSize = currentSize + change;
-  
+
   if (newSize >= 12 && newSize <= 24) {
     root.style.fontSize = newSize + 'px';
     localStorage.setItem('constableFontSize', newSize);
@@ -535,17 +562,17 @@ function resetFontSize() {
 function triggerSOS() {
   const user = getCurrentUser();
   if (!user) return;
-  
+
   const message = `🚨 SOS ALERT 🚨\n\nOfficer: ${user.fullName}\nBadge ID: ${user.badgeId}\nStation: ${user.station}\nLocation: ${currentLocation ? currentLocation.textContent : 'Unknown'}\nTime: ${currentTime ? currentTime.textContent : 'Unknown'}\n\nThis is an emergency alert!`;
-  
+
   // Show alert
   alert(message);
-  
+
   // Try to call emergency numbers
   if (confirm('Do you want to call emergency services?')) {
     window.open('tel:112', '_self');
   }
-  
+
   // Store SOS alert
   const sosAlert = {
     officer: user.fullName,
@@ -555,11 +582,11 @@ function triggerSOS() {
     time: currentTime ? currentTime.textContent : 'Unknown',
     timestamp: new Date().toISOString()
   };
-  
+
   const alerts = JSON.parse(localStorage.getItem('constableSOSAlerts')) || [];
   alerts.push(sosAlert);
   localStorage.setItem('constableSOSAlerts', JSON.stringify(alerts));
-  
+
   // Show notification
   showNotification('SOS alert sent successfully!', 'success');
 }
@@ -569,27 +596,27 @@ function showNotifications() {
   const alerts = JSON.parse(localStorage.getItem('constableSOSAlerts')) || [];
   const firs = JSON.parse(localStorage.getItem('constableFIRs')) || [];
   const cases = JSON.parse(localStorage.getItem('constableCases')) || [];
-  
+
   let message = 'Recent Notifications:\n\n';
-  
+
   if (alerts.length > 0) {
     message += `🚨 SOS Alerts: ${alerts.length}\n`;
   }
-  
+
   if (firs.length > 0) {
     message += `📄 New FIRs: ${firs.length}\n`;
   }
-  
+
   if (cases.length > 0) {
     message += `📁 Case Updates: ${cases.length}\n`;
   }
-  
+
   if (alerts.length === 0 && firs.length === 0 && cases.length === 0) {
     message += 'No new notifications.';
   }
-  
+
   alert(message);
-  
+
   // Update notification badge
   const totalNotifications = alerts.length + firs.length + cases.length;
   const badge = document.getElementById('notificationBadge');

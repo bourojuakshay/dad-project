@@ -35,12 +35,40 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// In-memory database (in production, use a real database)
-const users = [];
-const complaints = [];
-const firs = [];
-const cases = [];
-const locations = new Map();
+// Database File Path
+const DB_FILE = path.join(__dirname, 'data.json');
+
+// Initialize database file if it doesn't exist
+const initialDbState = {
+    users: [],
+    complaints: [],
+    firs: [],
+    cases: [],
+    locations: {}
+};
+
+if (!fs.existsSync(DB_FILE)) {
+    fs.writeFileSync(DB_FILE, JSON.stringify(initialDbState, null, 2));
+}
+
+// Database helper functions
+const readDb = () => {
+    try {
+        const data = fs.readFileSync(DB_FILE, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.error('Error reading database:', error);
+        return initialDbState;
+    }
+};
+
+const writeDb = (data) => {
+    try {
+        fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+    } catch (error) {
+        console.error('Error writing database:', error);
+    }
+};
 
 // JWT Secret
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -68,11 +96,12 @@ const authenticateToken = (req, res, next) => {
 // Register
 app.post('/api/register', async (req, res) => {
     try {
-        const { username, password, role } = req.body;
+        const { username, password, role, fullName, email, badgeId } = req.body;
+        const db = readDb();
 
         // Check if user already exists
-        if (users.find(u => u.username === username)) {
-            return res.status(400).json({ error: 'Username already exists' });
+        if (db.users.find(u => u.username === username || u.email === email || (badgeId && u.badgeId === badgeId))) {
+            return res.status(400).json({ error: 'Username, email, or badge ID already exists' });
         }
 
         // Hash password
@@ -80,15 +109,27 @@ app.post('/api/register', async (req, res) => {
 
         // Create user
         const user = {
-            id: users.length + 1,
-            username,
+            id: Date.now().toString(),
+            username: username || email, // Use email as username if not provided
+            email,
+            fullName,
+            badgeId,
             password: hashedPassword,
-            role: role || 'constable'
+            role: role || 'constable',
+            createdAt: new Date().toISOString()
         };
 
-        users.push(user);
+        db.users.push(user);
+        writeDb(db);
 
-        res.status(201).json({ message: 'User registered successfully' });
+        // Generate JWT for immediate login
+        const token = jwt.sign(
+            { id: user.id, username: user.username, role: user.role },
+            JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.status(201).json({ message: 'User registered successfully', token, user: { id: user.id, username: user.username, fullName: user.fullName, role: user.role } });
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
     }
@@ -98,9 +139,10 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
+        const db = readDb();
 
-        // Find user
-        const user = users.find(u => u.username === username);
+        // Find user by username or email
+        const user = db.users.find(u => u.username === username || u.email === username);
         if (!user) {
             return res.status(400).json({ error: 'Invalid credentials' });
         }
@@ -118,7 +160,7 @@ app.post('/api/login', async (req, res) => {
             { expiresIn: '24h' }
         );
 
-        res.json({ token, user: { id: user.id, username: user.username, role: user.role } });
+        res.json({ token, user: { id: user.id, username: user.username, fullName: user.fullName, role: user.role } });
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
     }
@@ -131,9 +173,10 @@ app.post('/api/complaints', authenticateToken, upload.single('attachment'), (req
     try {
         const { title, description, priority } = req.body;
         const attachment = req.file ? `/uploads/${req.file.filename}` : null;
+        const db = readDb();
 
         const complaint = {
-            id: complaints.length + 1,
+            id: Date.now().toString(),
             title,
             description,
             date: new Date().toISOString(),
@@ -143,7 +186,9 @@ app.post('/api/complaints', authenticateToken, upload.single('attachment'), (req
             constableId: req.user.id
         };
 
-        complaints.push(complaint);
+        db.complaints.push(complaint);
+        writeDb(db);
+
         res.status(201).json(complaint);
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
@@ -153,11 +198,12 @@ app.post('/api/complaints', authenticateToken, upload.single('attachment'), (req
 // Get complaints
 app.get('/api/complaints', authenticateToken, (req, res) => {
     try {
-        let userComplaints = complaints;
+        const db = readDb();
+        let userComplaints = db.complaints;
 
         // If constable, only show their complaints
         if (req.user.role === 'constable') {
-            userComplaints = complaints.filter(c => c.constableId === req.user.id);
+            userComplaints = db.complaints.filter(c => c.constableId === req.user.id);
         }
 
         res.json(userComplaints);
@@ -173,15 +219,18 @@ app.put('/api/complaints/:id/status', authenticateToken, (req, res) => {
             return res.status(403).json({ error: 'Insufficient permissions' });
         }
 
-        const complaintId = parseInt(req.params.id);
+        const complaintId = req.params.id;
         const { status } = req.body;
+        const db = readDb();
 
-        const complaint = complaints.find(c => c.id === complaintId);
+        const complaint = db.complaints.find(c => c.id === complaintId);
         if (!complaint) {
             return res.status(404).json({ error: 'Complaint not found' });
         }
 
         complaint.status = status;
+        writeDb(db);
+
         res.json(complaint);
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
@@ -194,9 +243,10 @@ app.put('/api/complaints/:id/status', authenticateToken, (req, res) => {
 app.post('/api/firs', authenticateToken, (req, res) => {
     try {
         const { firNumber, complainantName, incidentDate, location, description } = req.body;
+        const db = readDb();
 
         const fir = {
-            id: firs.length + 1,
+            id: Date.now().toString(),
             firNumber,
             complainantName,
             incidentDate,
@@ -207,7 +257,9 @@ app.post('/api/firs', authenticateToken, (req, res) => {
             createdBy: req.user.id
         };
 
-        firs.push(fir);
+        db.firs.push(fir);
+        writeDb(db);
+
         res.status(201).json(fir);
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
@@ -217,7 +269,8 @@ app.post('/api/firs', authenticateToken, (req, res) => {
 // Get FIRs
 app.get('/api/firs', authenticateToken, (req, res) => {
     try {
-        res.json(firs);
+        const db = readDb();
+        res.json(db.firs);
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
     }
@@ -226,17 +279,61 @@ app.get('/api/firs', authenticateToken, (req, res) => {
 // Update FIR
 app.put('/api/firs/:id', authenticateToken, (req, res) => {
     try {
-        const firId = parseInt(req.params.id);
+        const firId = req.params.id;
         const updates = req.body;
+        const db = readDb();
 
-        const fir = firs.find(f => f.id === firId);
+        const fir = db.firs.find(f => f.id === firId);
         if (!fir) {
             return res.status(404).json({ error: 'FIR not found' });
         }
 
         Object.assign(fir, updates);
+        writeDb(db);
+
         res.json(fir);
     } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Complaints
+
+// Create complaint
+app.post('/api/complaints', authenticateToken, (req, res) => {
+    try {
+        const complaintData = req.body;
+        const db = readDb();
+
+        const newComplaint = {
+            id: 'CMP-' + Date.now(),
+            ...complaintData,
+            status: 'Pending',
+            createdBy: req.user.id,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+
+        if (!db.complaints) {
+            db.complaints = [];
+        }
+        db.complaints.unshift(newComplaint);
+        writeDb(db);
+
+        res.status(201).json(newComplaint);
+    } catch (error) {
+        console.error('Error creating complaint:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Get all complaints
+app.get('/api/complaints', authenticateToken, (req, res) => {
+    try {
+        const db = readDb();
+        res.json(db.complaints || []);
+    } catch (error) {
+        console.error('Error fetching complaints:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -248,17 +345,19 @@ app.post('/api/cases', authenticateToken, upload.single('document'), (req, res) 
     try {
         const { firId, remarks } = req.body;
         const document = req.file ? `/uploads/${req.file.filename}` : null;
+        const db = readDb();
 
         const caseUpdate = {
-            id: cases.length + 1,
-            firId: parseInt(firId),
+            id: Date.now().toString(),
+            firId: firId,
             remarks,
             document,
             createdBy: req.user.id,
             createdAt: new Date().toISOString()
         };
 
-        cases.push(caseUpdate);
+        db.cases.push(caseUpdate);
+        writeDb(db);
         res.status(201).json(caseUpdate);
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
@@ -268,7 +367,8 @@ app.post('/api/cases', authenticateToken, upload.single('document'), (req, res) 
 // Get case updates
 app.get('/api/cases', authenticateToken, (req, res) => {
     try {
-        res.json(cases);
+        const db = readDb();
+        res.json(db.cases);
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
     }
@@ -280,13 +380,18 @@ app.get('/api/cases', authenticateToken, (req, res) => {
 app.post('/api/location', authenticateToken, (req, res) => {
     try {
         const { latitude, longitude } = req.body;
+        const db = readDb();
 
-        locations.set(req.user.id, {
+        if (!db.locations) db.locations = {};
+
+        db.locations[req.user.id] = {
             latitude,
             longitude,
             timestamp: new Date().toISOString(),
             username: req.user.username
-        });
+        };
+
+        writeDb(db);
 
         res.json({ message: 'Location updated successfully' });
     } catch (error) {
@@ -301,7 +406,8 @@ app.get('/api/locations', authenticateToken, (req, res) => {
             return res.status(403).json({ error: 'Insufficient permissions' });
         }
 
-        const locationData = Array.from(locations.entries()).map(([id, data]) => ({
+        const db = readDb();
+        const locationData = Object.entries(db.locations || {}).map(([id, data]) => ({
             id,
             ...data
         }));
@@ -315,7 +421,8 @@ app.get('/api/locations', authenticateToken, (req, res) => {
 // Get user's own location
 app.get('/api/location', authenticateToken, (req, res) => {
     try {
-        const location = locations.get(req.user.id);
+        const db = readDb();
+        const location = (db.locations || {})[req.user.id];
         if (!location) {
             return res.status(404).json({ error: 'Location not found' });
         }
@@ -373,7 +480,7 @@ app.get('/api/uploads', authenticateToken, (req, res) => {
 app.delete('/api/uploads/:id', authenticateToken, (req, res) => {
     try {
         const uploadId = req.params.id;
-        
+
         // In production, you would delete from database and filesystem
         res.json({ message: 'File deleted successfully' });
     } catch (error) {
