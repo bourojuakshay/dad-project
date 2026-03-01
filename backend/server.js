@@ -51,6 +51,37 @@ if (!fs.existsSync(DB_FILE)) {
     fs.writeFileSync(DB_FILE, JSON.stringify(initialDbState, null, 2));
 }
 
+// Seed a default constable account so the deployed site always has a working login
+async function seedDefaultUser() {
+    try {
+        const db = readDb();
+        const defaultEmail = 'admin@police.gov';
+        const exists = db.users.find(u => u.email === defaultEmail);
+        if (!exists) {
+            const hashedPassword = await bcrypt.hash('constable123', 10);
+            const defaultUser = {
+                id: 'default-admin-001',
+                username: defaultEmail,
+                email: defaultEmail,
+                fullName: 'Admin Constable',
+                badgeId: 'BADGE001',
+                password: hashedPassword,
+                role: 'constable',
+                createdAt: new Date().toISOString()
+            };
+            db.users.push(defaultUser);
+            writeDb(db);
+            console.log('✅ Default admin account seeded: admin@police.gov / constable123');
+        }
+    } catch (err) {
+        console.error('Failed to seed default user:', err);
+    }
+}
+
+// Run seed on startup
+seedDefaultUser();
+
+
 // Database helper functions
 const readDb = () => {
     try {
