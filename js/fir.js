@@ -1,167 +1,148 @@
-// FIR JavaScript Logic
+// ─── FIRs – Firebase Firestore ────────────────────────────────────────────────
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import {
+  getFirestore, collection, query, where,
+  getDocs, addDoc, updateDoc, deleteDoc,
+  doc, serverTimestamp, orderBy
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyByqlrBrUqv5twev84RtpNLNh0EakUTi8c",
+  authDomain: "police-port.firebaseapp.com",
+  projectId: "police-port",
+  storageBucket: "police-port.firebasestorage.app",
+  messagingSenderId: "602535462028",
+  appId: "1:602535462028:web:8446bbee4c1e0b988ba7a9"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 // Global Variables
 let firs = [];
 let currentFilter = 'all';
 let searchQuery = '';
+let currentUID = null;
+let currentUser = null;
 
 // DOM Elements
-const userName = document.getElementById('userName');
-const totalFIRs = document.getElementById('totalFIRs');
-const pendingFIRs = document.getElementById('pendingFIRs');
-const registeredFIRs = document.getElementById('registeredFIRs');
-const urgentFIRs = document.getElementById('urgentFIRs');
-const firTableBody = document.getElementById('firTableBody');
+const userNameEl = document.getElementById('userName');
+const totalFIRsEl = document.getElementById('totalFIRs');
+const pendingFIRsEl = document.getElementById('pendingFIRs');
+const registeredFIRsEl = document.getElementById('registeredFIRs');
+const urgentFIRsEl = document.getElementById('urgentFIRs');
+const firTableBodyEl = document.getElementById('firTableBody');
 const firModal = document.getElementById('firModal');
 const firDetailsModal = document.getElementById('firDetailsModal');
 
-// Initialize FIR Page
-document.addEventListener('DOMContentLoaded', function () {
-  // Check authentication
-  checkAuth();
+// ─── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = 'index.html';
+      return;
+    }
+    currentUID = user.uid;
+    const stored = sessionStorage.getItem('constableCurrentUser') || localStorage.getItem('constableCurrentUser');
+    currentUser = stored ? JSON.parse(stored) : { uid: user.uid, email: user.email };
+    if (userNameEl) userNameEl.textContent = currentUser.fullName || currentUser.email;
 
-  // Set up event listeners
-  setupEventListeners();
-
-  // Load user data
-  loadUserData();
-
-  // Load FIRs
-  loadFIRs();
-
-  // Update statistics
-  updateStatistics();
-
-  // Set active navigation
-  setActiveNav();
+    setupEventListeners();
+    setActiveNav();
+    await loadFIRs();
+  });
 });
-
-// Check if user is authenticated
-function checkAuth() {
-  const currentUser = getCurrentUser();
-  if (!currentUser) {
-    window.location.href = 'index.html';
-    return;
-  }
-}
-
-// Get current user from storage
-function getCurrentUser() {
-  let user = sessionStorage.getItem('constableCurrentUser');
-  if (!user) {
-    user = localStorage.getItem('constableCurrentUser');
-  }
-  return user ? JSON.parse(user) : null;
-}
 
 // Set up event listeners
 function setupEventListeners() {
-  // Sidebar toggle
   const sidebarToggle = document.getElementById('sidebarToggle');
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('overlay');
 
   if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', function () {
+    sidebarToggle.addEventListener('click', () => {
       sidebar.classList.toggle('active');
       overlay.classList.toggle('active');
     });
   }
 
   if (overlay) {
-    overlay.addEventListener('click', function () {
+    overlay.addEventListener('click', () => {
       sidebar.classList.remove('active');
       overlay.classList.remove('active');
     });
   }
 
-  // Close sidebar when window is resized to desktop
-  window.addEventListener('resize', function () {
+  window.addEventListener('resize', () => {
     if (window.innerWidth > 1024) {
       sidebar.classList.remove('active');
       overlay.classList.remove('active');
     }
   });
 
-  // Modal events
-  firModal.addEventListener('click', function (e) {
-    if (e.target === firModal) {
-      closeFIRModal();
-    }
-  });
+  if (firModal) {
+    firModal.addEventListener('click', (e) => {
+      if (e.target === firModal) closeFIRModal();
+    });
+  }
 
-  firDetailsModal.addEventListener('click', function (e) {
-    if (e.target === firDetailsModal) {
-      closeFIRDetailsModal();
-    }
-  });
-}
-
-// Load user data
-function loadUserData() {
-  const user = getCurrentUser();
-  if (user) {
-    userName.textContent = user.fullName;
+  if (firDetailsModal) {
+    firDetailsModal.addEventListener('click', (e) => {
+      if (e.target === firDetailsModal) closeFIRDetailsModal();
+    });
   }
 }
 
-// Load FIRs from Backend
+// ─── Load FIRs from Firestore ────────────────────────────────────────────────
 async function loadFIRs() {
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-  if (!token) return;
-
   try {
-    const response = await fetch('/api/firs', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-
-    if (response.ok) {
-      firs = await response.json();
-    } else {
-      firs = [];
-    }
-  } catch (error) {
-    console.error('Error loading FIRs:', error);
+    const q = query(
+      collection(db, 'firs'),
+      where('createdBy', '==', currentUID),
+      orderBy('createdAt', 'desc')
+    );
+    const snap = await getDocs(q);
+    firs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (err) {
+    console.error('Error loading FIRs:', err);
     firs = [];
   }
-
   renderFIRs();
 }
 
-// Removed createSampleFIRs and saveFIRs as the backend handles persistence and mocking now.
-
 // Render FIRs table
 function renderFIRs() {
-  firTableBody.innerHTML = '';
+  firTableBodyEl.innerHTML = '';
+  const filtered = filterAndSearchFIRs();
 
-  const filteredFIRs = filterAndSearchFIRs();
-
-  if (filteredFIRs.length === 0) {
-    firTableBody.innerHTML = `
+  if (filtered.length === 0) {
+    firTableBodyEl.innerHTML = `
       <tr>
         <td colspan="6" style="text-align: center; color: var(--gray-600); padding: 40px;">
           No FIRs found
         </td>
       </tr>
     `;
+    updateStatistics();
     return;
   }
 
-  filteredFIRs.forEach(fir => {
+  filtered.forEach(fir => {
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${fir.firNumber}</td>
-      <td>${fir.complainantName}</td>
-      <td><span class="status-badge">${fir.offenceType}</span></td>
-      <td>${fir.dateOfIncident}</td>
-      <td><span class="status-badge status-${fir.status.toLowerCase()}">${fir.status}</span></td>
+      <td>${fir.firNumber || '—'}</td>
+      <td>${fir.complainantName || '—'}</td>
+      <td><span class="status-badge">${fir.offenceType || '—'}</span></td>
+      <td>${fir.dateOfIncident || '—'}</td>
+      <td><span class="status-badge status-${(fir.status || '').toLowerCase()}">${fir.status || 'Registered'}</span></td>
       <td>
         <button class="action-btn primary" onclick="viewFIRDetails('${fir.id}')">View</button>
         <button class="action-btn secondary" onclick="editFIR('${fir.id}')">Edit</button>
         <button class="action-btn danger" onclick="deleteFIR('${fir.id}')">Delete</button>
       </td>
     `;
-    firTableBody.appendChild(row);
+    firTableBodyEl.appendChild(row);
   });
 
   updateStatistics();
@@ -169,313 +150,196 @@ function renderFIRs() {
 
 // Filter and search FIRs
 function filterAndSearchFIRs() {
-  let filtered = firs;
+  let filtered = [...firs];
 
-  // Filter by status
   if (currentFilter !== 'all') {
     filtered = filtered.filter(fir => {
       if (currentFilter === 'urgent') {
         return fir.priority === 'Urgent';
       } else {
-        return fir.status.toLowerCase() === currentFilter;
+        return (fir.status || '').toLowerCase() === currentFilter;
       }
     });
   }
 
-  // Search
   if (searchQuery.trim() !== '') {
-    const query = searchQuery.toLowerCase();
+    const queryStr = searchQuery.toLowerCase();
     filtered = filtered.filter(fir =>
-      fir.firNumber.toLowerCase().includes(query) ||
-      fir.complainantName.toLowerCase().includes(query) ||
-      fir.offenceType.toLowerCase().includes(query) ||
-      fir.incidentDescription.toLowerCase().includes(query) ||
-      fir.incidentLocation.toLowerCase().includes(query)
+      (fir.firNumber || '').toLowerCase().includes(queryStr) ||
+      (fir.complainantName || '').toLowerCase().includes(queryStr) ||
+      (fir.offenceType || '').toLowerCase().includes(queryStr) ||
+      (fir.incidentDescription || '').toLowerCase().includes(queryStr) ||
+      (fir.incidentLocation || '').toLowerCase().includes(queryStr)
     );
   }
-
-  // Sort by date (newest first)
-  filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   return filtered;
 }
 
-// Filter FIRs
-function filterFIRs(filter) {
+// External filter calls
+window.filterFIRs = function (filter) {
   currentFilter = filter;
-
-  // Update filter buttons
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.classList.remove('active');
-  });
-  event.target.classList.add('active');
-
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  if (event) event.target.classList.add('active');
   renderFIRs();
-}
+};
 
-// Search FIRs
-function searchFIRs() {
+window.searchFIRs = function () {
   searchQuery = document.getElementById('firSearch').value;
   renderFIRs();
-}
+};
 
 // Update statistics
 function updateStatistics() {
-  totalFIRs.textContent = firs.length;
-
-  const pending = firs.filter(f => f.status === 'Pending').length;
-  const registered = firs.filter(f => f.status === 'Registered').length;
-  const urgent = firs.filter(f => f.priority === 'Urgent').length;
-
-  pendingFIRs.textContent = pending;
-  registeredFIRs.textContent = registered;
-  urgentFIRs.textContent = urgent;
+  if (totalFIRsEl) totalFIRsEl.textContent = firs.length;
+  if (pendingFIRsEl) pendingFIRsEl.textContent = firs.filter(f => f.status === 'Pending').length;
+  if (registeredFIRsEl) registeredFIRsEl.textContent = firs.filter(f => f.status === 'Registered').length;
+  if (urgentFIRsEl) urgentFIRsEl.textContent = firs.filter(f => f.priority === 'Urgent').length;
 }
 
 // Open FIR modal
-function openFIRModal() {
+window.openFIRModal = function () {
   firModal.style.display = 'flex';
-  setTimeout(() => {
-    firModal.classList.add('active');
-  }, 10);
-}
+  setTimeout(() => firModal.classList.add('active'), 10);
+};
 
 // Close FIR modal
-function closeFIRModal() {
+window.closeFIRModal = function () {
   firModal.classList.remove('active');
   setTimeout(() => {
     firModal.style.display = 'none';
     document.getElementById('firForm').reset();
+    const submitBtn = document.querySelector('.modal-footer .primary-btn');
+    if (submitBtn) {
+      submitBtn.onclick = submitFIR;
+      submitBtn.textContent = 'Register FIR';
+    }
   }, 300);
-}
+};
 
 // Submit FIR
-async function submitFIR() {
-  const formData = {
-    complainantName: document.getElementById('complainantName').value,
+window.submitFIR = async function () {
+  const data = getFormData();
+  if (!validateForm(data)) return;
+
+  const firNumber = generateFIRNumber();
+  const payload = {
+    ...data,
+    firNumber: firNumber,
+    status: 'Registered',
+    createdBy: currentUID,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  };
+
+  try {
+    const docRef = await addDoc(collection(db, 'firs'), payload);
+    firs.unshift({ id: docRef.id, ...payload, createdAt: new Date(), updatedAt: new Date() });
+    renderFIRs();
+    closeFIRModal();
+    showNotification('FIR registered successfully!', 'success');
+  } catch (err) {
+    console.error('Error submitting FIR:', err);
+    showNotification('Failed to register FIR.', 'error');
+  }
+};
+
+function getFormData() {
+  return {
+    complainantName: document.getElementById('complainantName').value.trim(),
     complainantAge: parseInt(document.getElementById('complainantAge').value),
     complainantGender: document.getElementById('complainantGender').value,
-    complainantOccupation: document.getElementById('complainantOccupation').value,
-    complainantAddress: document.getElementById('complainantAddress').value,
-    complainantPhone: document.getElementById('complainantPhone').value,
-    complainantAadhaar: document.getElementById('complainantAadhaar').value,
+    complainantOccupation: document.getElementById('complainantOccupation').value.trim(),
+    complainantAddress: document.getElementById('complainantAddress').value.trim(),
+    complainantPhone: document.getElementById('complainantPhone').value.trim(),
+    complainantAadhaar: document.getElementById('complainantAadhaar').value.trim(),
     offenceType: document.getElementById('offenceType').value,
     dateOfIncident: document.getElementById('firDate').value,
     timeOfIncident: document.getElementById('firTime').value,
-    incidentLocation: document.getElementById('incidentLocation').value,
-    incidentDescription: document.getElementById('incidentDescription').value,
-    accusedDetails: document.getElementById('accusedDetails').value,
-    witnessDetails: document.getElementById('witnessDetails').value,
-    propertyDetails: document.getElementById('propertyDetails').value,
+    incidentLocation: document.getElementById('incidentLocation').value.trim(),
+    incidentDescription: document.getElementById('incidentDescription').value.trim(),
+    accusedDetails: document.getElementById('accusedDetails').value.trim(),
+    witnessDetails: document.getElementById('witnessDetails').value.trim(),
+    propertyDetails: document.getElementById('propertyDetails').value.trim(),
     estimatedValue: parseInt(document.getElementById('estimatedValue').value) || 0,
     recoveryStatus: document.getElementById('recoveryStatus').value,
     priority: document.getElementById('firPriority').value
   };
+}
 
-  // Validation
-  if (!formData.complainantName || !formData.complainantAge || !formData.complainantGender ||
-    !formData.complainantOccupation || !formData.complainantAddress || !formData.complainantPhone ||
-    !formData.offenceType || !formData.dateOfIncident || !formData.timeOfIncident ||
-    !formData.incidentLocation || !formData.incidentDescription) {
+function validateForm(data) {
+  if (!data.complainantName || !data.complainantAge || !data.complainantGender ||
+    !data.complainantOccupation || !data.complainantAddress || !data.complainantPhone ||
+    !data.offenceType || !data.dateOfIncident || !data.timeOfIncident ||
+    !data.incidentLocation || !data.incidentDescription) {
     showNotification('Please fill in all required fields', 'error');
-    return;
+    return false;
   }
-
-  // Generate FIR number locally to send to backend
-  const firNumber = generateFIRNumber();
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-
-  try {
-    const response = await fetch('/api/firs', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        ...formData,
-        description: formData.incidentDescription,
-        location: formData.incidentLocation,
-        incidentDate: formData.dateOfIncident,
-        firNumber: firNumber,
-        status: 'Registered',
-        priority: formData.priority
-      })
-    });
-
-    if (response.ok) {
-      const newFIR = await response.json();
-
-      // Add full frontend UI properties mapping
-      Object.assign(newFIR, formData);
-
-      firs.unshift(newFIR);
-      renderFIRs();
-      closeFIRModal();
-      showNotification('FIR registered successfully!', 'success');
-    } else {
-      showNotification('Failed to register FIR on server.', 'error');
-    }
-  } catch (error) {
-    console.error('FIR registration error:', error);
-    showNotification('Network error.', 'error');
-  }
+  return true;
 }
 
 // Generate FIR number
 function generateFIRNumber() {
-  const year = new Date().getFullYear();
-  const month = String(new Date().getMonth() + 1).padStart(2, '0');
-  const day = String(new Date().getDate()).padStart(2, '0');
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
   const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
   return `FIR/${year}/${month}${day}${random}`;
 }
 
 // View FIR details
-function viewFIRDetails(firId) {
+window.viewFIRDetails = function (firId) {
   const fir = firs.find(f => f.id === firId);
   if (!fir) return;
 
   const content = document.getElementById('firDetailsContent');
+  const createdDate = fir.createdAt?.toDate ? fir.createdAt.toDate().toLocaleString() : new Date(fir.createdAt).toLocaleString();
+  const updatedDate = fir.updatedAt?.toDate ? fir.updatedAt.toDate().toLocaleString() : new Date(fir.updatedAt).toLocaleString();
+
   content.innerHTML = `
     <div class="fir-details">
-      <div class="detail-item">
-        <div class="detail-label">FIR Number</div>
-        <div class="detail-value">${fir.firNumber}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">Status</div>
-        <div class="detail-value">
-          <span class="status-badge status-${fir.status.toLowerCase()}">${fir.status}</span>
-        </div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">Priority</div>
-        <div class="detail-value">
-          <span class="priority-badge priority-${fir.priority.toLowerCase()}">${fir.priority}</span>
-        </div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">Created</div>
-        <div class="detail-value">${new Date(fir.createdAt).toLocaleString()}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">Updated</div>
-        <div class="detail-value">${new Date(fir.updatedAt).toLocaleString()}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">Offence Type</div>
-        <div class="detail-value">${fir.offenceType}</div>
-      </div>
+      <div class="detail-item"><div class="detail-label">FIR Number</div><div class="detail-value">${fir.firNumber}</div></div>
+      <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value"><span class="status-badge status-${(fir.status || '').toLowerCase()}">${fir.status}</span></div></div>
+      <div class="detail-item"><div class="detail-label">Priority</div><div class="detail-value"><span class="priority-badge priority-${(fir.priority || '').toLowerCase()}">${fir.priority}</span></div></div>
+      <div class="detail-item"><div class="detail-label">Created</div><div class="detail-value">${createdDate}</div></div>
+      <div class="detail-item"><div class="detail-label">Offence Type</div><div class="detail-value">${fir.offenceType}</div></div>
     </div>
-    
-    <div style="margin-top: 20px; padding: 16px; background: var(--gray-100); border-radius: 12px; border: 1px solid var(--gray-200);">
-      <h4 style="margin: 0 0 12px 0; color: var(--gray-800);">Complainant Information</h4>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <div>
-          <div class="detail-label">Name</div>
-          <div class="detail-value">${fir.complainantName}</div>
-        </div>
-        <div>
-          <div class="detail-label">Age</div>
-          <div class="detail-value">${fir.complainantAge}</div>
-        </div>
-        <div>
-          <div class="detail-label">Gender</div>
-          <div class="detail-value">${fir.complainantGender}</div>
-        </div>
-        <div>
-          <div class="detail-label">Occupation</div>
-          <div class="detail-value">${fir.complainantOccupation}</div>
-        </div>
+    <div style="margin-top:20px;padding:16px;background:var(--gray-100);border-radius:12px;border:1px solid var(--gray-200);">
+      <h4 style="margin:0 0 12px 0;color:var(--gray-800);">Complainant Information</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><div class="detail-label">Name</div><div class="detail-value">${fir.complainantName}</div></div>
+        <div><div class="detail-label">Age</div><div class="detail-value">${fir.complainantAge}</div></div>
+        <div><div class="detail-label">Gender</div><div class="detail-value">${fir.complainantGender}</div></div>
+        <div><div class="detail-label">Occupation</div><div class="detail-value">${fir.complainantOccupation}</div></div>
       </div>
-      <div style="margin-top: 12px;">
-        <div class="detail-label">Address</div>
-        <div class="detail-value" style="white-space: pre-line;">${fir.complainantAddress}</div>
-      </div>
-      <div style="margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <div>
-          <div class="detail-label">Phone</div>
-          <div class="detail-value">${fir.complainantPhone}</div>
-        </div>
-        <div>
-          <div class="detail-label">Aadhaar</div>
-          <div class="detail-value">${fir.complainantAadhaar || 'Not provided'}</div>
-        </div>
-      </div>
+      <div style="margin-top:12px;"><div class="detail-label">Address</div><div class="detail-value" style="white-space:pre-line;">${fir.complainantAddress}</div></div>
     </div>
-    
-    <div style="margin-top: 20px; padding: 16px; background: var(--gray-100); border-radius: 12px; border: 1px solid var(--gray-200);">
-      <h4 style="margin: 0 0 12px 0; color: var(--gray-800);">Incident Details</h4>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <div>
-          <div class="detail-label">Date</div>
-          <div class="detail-value">${fir.dateOfIncident}</div>
-        </div>
-        <div>
-          <div class="detail-label">Time</div>
-          <div class="detail-value">${fir.timeOfIncident}</div>
-        </div>
+    <div style="margin-top:20px;padding:16px;background:var(--gray-100);border-radius:12px;border:1px solid var(--gray-200);">
+      <h4 style="margin:0 0 12px 0;color:var(--gray-800);">Incident Details</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><div class="detail-label">Date</div><div class="detail-value">${fir.dateOfIncident}</div></div>
+        <div><div class="detail-label">Time</div><div class="detail-value">${fir.timeOfIncident}</div></div>
       </div>
-      <div style="margin-top: 12px;">
-        <div class="detail-label">Location</div>
-        <div class="detail-value">${fir.incidentLocation}</div>
-      </div>
-      <div style="margin-top: 12px;">
-        <div class="detail-label">Description</div>
-        <div class="detail-value" style="white-space: pre-line;">${fir.incidentDescription}</div>
-      </div>
-    </div>
-    
-    <div style="margin-top: 20px; padding: 16px; background: var(--gray-100); border-radius: 12px; border: 1px solid var(--gray-200);">
-      <h4 style="margin: 0 0 12px 0; color: var(--gray-800);">Additional Information</h4>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <div>
-          <div class="detail-label">Accused Details</div>
-          <div class="detail-value" style="white-space: pre-line;">${fir.accusedDetails || 'Not available'}</div>
-        </div>
-        <div>
-          <div class="detail-label">Witness Details</div>
-          <div class="detail-value" style="white-space: pre-line;">${fir.witnessDetails || 'Not available'}</div>
-        </div>
-      </div>
-      <div style="margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <div>
-          <div class="detail-label">Property Details</div>
-          <div class="detail-value" style="white-space: pre-line;">${fir.propertyDetails || 'Not applicable'}</div>
-        </div>
-        <div>
-          <div class="detail-label">Estimated Value</div>
-          <div class="detail-value">₹${fir.estimatedValue.toLocaleString() || '0'}</div>
-        </div>
-        <div>
-          <div class="detail-label">Recovery Status</div>
-          <div class="detail-value">${fir.recoveryStatus}</div>
-        </div>
-      </div>
+      <div style="margin-top:12px;"><div class="detail-label">Location</div><div class="detail-value">${fir.incidentLocation}</div></div>
+      <div style="margin-top:12px;"><div class="detail-label">Description</div><div class="detail-value" style="white-space:pre-line;">${fir.incidentDescription}</div></div>
     </div>
   `;
 
   firDetailsModal.style.display = 'flex';
-  setTimeout(() => {
-    firDetailsModal.classList.add('active');
-  }, 10);
-}
+  setTimeout(() => firDetailsModal.classList.add('active'), 10);
+};
 
-// Close FIR details modal
-function closeFIRDetailsModal() {
+window.closeFIRDetailsModal = function () {
   firDetailsModal.classList.remove('active');
-  setTimeout(() => {
-    firDetailsModal.style.display = 'none';
-  }, 300);
-}
+  setTimeout(() => { firDetailsModal.style.display = 'none'; }, 300);
+};
 
 // Edit FIR
-function editFIR(firId) {
+window.editFIR = function (firId) {
   const fir = firs.find(f => f.id === firId);
   if (!fir) return;
 
-  // Pre-fill form with FIR data
   document.getElementById('complainantName').value = fir.complainantName;
   document.getElementById('complainantAge').value = fir.complainantAge;
   document.getElementById('complainantGender').value = fir.complainantGender;
@@ -495,227 +359,90 @@ function editFIR(firId) {
   document.getElementById('recoveryStatus').value = fir.recoveryStatus;
   document.getElementById('firPriority').value = fir.priority;
 
-  // Change submit function to update
   const submitBtn = document.querySelector('.modal-footer .primary-btn');
-  submitBtn.onclick = () => updateFIR(firId);
-  submitBtn.textContent = 'Update FIR';
-
-  openFIRModal();
-}
-
-// Update FIR
-async function updateFIR(firId) {
-  const formData = {
-    complainantName: document.getElementById('complainantName').value,
-    complainantAge: parseInt(document.getElementById('complainantAge').value),
-    complainantGender: document.getElementById('complainantGender').value,
-    complainantOccupation: document.getElementById('complainantOccupation').value,
-    complainantAddress: document.getElementById('complainantAddress').value,
-    complainantPhone: document.getElementById('complainantPhone').value,
-    complainantAadhaar: document.getElementById('complainantAadhaar').value,
-    offenceType: document.getElementById('offenceType').value,
-    dateOfIncident: document.getElementById('firDate').value,
-    timeOfIncident: document.getElementById('firTime').value,
-    incidentLocation: document.getElementById('incidentLocation').value,
-    incidentDescription: document.getElementById('incidentDescription').value,
-    accusedDetails: document.getElementById('accusedDetails').value,
-    witnessDetails: document.getElementById('witnessDetails').value,
-    propertyDetails: document.getElementById('propertyDetails').value,
-    estimatedValue: parseInt(document.getElementById('estimatedValue').value) || 0,
-    recoveryStatus: document.getElementById('recoveryStatus').value,
-    priority: document.getElementById('firPriority').value
-  };
-
-  // Validation
-  if (!formData.complainantName || !formData.complainantAge || !formData.complainantGender ||
-    !formData.complainantOccupation || !formData.complainantAddress || !formData.complainantPhone ||
-    !formData.offenceType || !formData.dateOfIncident || !formData.timeOfIncident ||
-    !formData.incidentLocation || !formData.incidentDescription) {
-    showNotification('Please fill in all required fields', 'error');
-    return;
+  if (submitBtn) {
+    submitBtn.onclick = () => updateFIRRecord(firId);
+    submitBtn.textContent = 'Update FIR';
   }
 
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-  try {
-    const response = await fetch(`/api/firs/${firId}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        ...formData,
-        description: formData.incidentDescription,
-        location: formData.incidentLocation,
-        incidentDate: formData.dateOfIncident
-      })
-    });
+  openFIRModal();
+};
 
-    if (response.ok) {
-      const index = firs.findIndex(f => f.id === firId);
-      if (index > -1) {
-        firs[index] = {
-          ...firs[index],
-          ...formData,
-          updatedAt: new Date().toISOString()
-        };
-        renderFIRs();
-        const submitBtn = document.querySelector('.modal-footer .primary-btn');
-        submitBtn.onclick = submitFIR;
-        submitBtn.textContent = 'Register FIR';
-        closeFIRModal();
-        showNotification('FIR updated successfully!', 'success');
-      }
-    } else {
-      showNotification('Failed to update FIR on server.', 'error');
+async function updateFIRRecord(firId) {
+  const data = getFormData();
+  if (!validateForm(data)) return;
+
+  try {
+    const docRef = doc(db, 'firs', firId);
+    await updateDoc(docRef, { ...data, updatedAt: serverTimestamp() });
+
+    const index = firs.findIndex(f => f.id === firId);
+    if (index > -1) {
+      firs[index] = { ...firs[index], ...data, updatedAt: new Date() };
     }
-  } catch (error) {
-    console.error('FIR update error:', error);
-    showNotification('Network error.', 'error');
+    renderFIRs();
+    closeFIRModal();
+    showNotification('FIR updated successfully!', 'success');
+  } catch (err) {
+    console.error('Error updating FIR:', err);
+    showNotification('Failed to update FIR.', 'error');
   }
 }
 
 // Delete FIR
-function deleteFIR(firId) {
-  if (confirm('Are you sure you want to delete this FIR?')) {
+window.deleteFIR = async function (firId) {
+  if (!confirm('Are you sure you want to delete this FIR?')) return;
+  try {
+    await deleteDoc(doc(db, 'firs', firId));
     firs = firs.filter(f => f.id !== firId);
-    // Note: there is no DELETE /api/firs/:id endpoint provided out of the box so mocking client side view.
     renderFIRs();
-    showNotification('FIR mock deleted successfully!', 'success');
+    showNotification('FIR deleted successfully!', 'success');
+  } catch (err) {
+    console.error('Error deleting FIR:', err);
+    showNotification('Failed to delete FIR.', 'error');
   }
-}
+};
 
-// Update FIR status
-function updateFIRStatus() {
-  // This would typically be implemented in the FIR details modal
-  // For now, we'll close the modal
-  closeFIRDetailsModal();
-  showNotification('FIR status updated!', 'success');
-}
-
-// Set active navigation based on current page
+// Nav
 function setActiveNav() {
-  const currentPage = window.location.pathname.split('/').pop();
-  const currentLink = document.querySelector(`.nav-link[href="${currentPage}"]`);
-
-  if (currentLink) {
-    currentLink.classList.add('active');
-  }
+  const page = window.location.pathname.split('/').pop();
+  const link = document.querySelector(`.nav-link[href="${page}"]`);
+  if (link) link.classList.add('active');
 }
 
-// Show notification toast
+// SOS / Logout
+window.triggerSOS = function () {
+  alert(`🚨 SOS ALERT\nOfficer: ${currentUser?.fullName}\nTime: ${new Date().toLocaleString()}`);
+  if (confirm('Call emergency services?')) window.open('tel:112', '_self');
+};
+
+window.logout = async function () {
+  if (!confirm('Logout?')) return;
+  await signOut(auth);
+  sessionStorage.clear();
+  localStorage.removeItem('constableCurrentUser');
+  window.location.href = 'index.html';
+};
+
+window.showNotifications = function () { alert('No new notifications.'); };
+
+// Toast
 function showNotification(message, type = 'info') {
-  // Create notification element
-  const notification = document.createElement('div');
-  notification.className = `notification ${type}`;
-  notification.textContent = message;
-
-  // Add styles
-  notification.style.position = 'fixed';
-  notification.style.bottom = '20px';
-  notification.style.right = '20px';
-  notification.style.background = type === 'success' ? '#38a169' : '#1a365d';
-  notification.style.color = 'white';
-  notification.style.padding = '15px 20px';
-  notification.style.borderRadius = '8px';
-  notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-  notification.style.zIndex = '1000';
-  notification.style.opacity = '0';
-  notification.style.transform = 'translateY(20px)';
-  notification.style.transition = 'all 0.3s ease';
-
-  // Add to DOM
-  document.body.appendChild(notification);
-
-  // Animate in
+  const n = document.createElement('div');
+  const bg = type === 'success' ? '#38a169' : (type === 'error' ? '#e53e3e' : '#1a365d');
+  Object.assign(n.style, {
+    position: 'fixed', bottom: '20px', right: '20px',
+    background: bg, color: 'white', padding: '15px 20px',
+    borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+    zIndex: '2000', opacity: '0', transform: 'translateY(20px)',
+    transition: 'all 0.3s ease'
+  });
+  n.textContent = message;
+  document.body.appendChild(n);
+  setTimeout(() => { n.style.opacity = '1'; n.style.transform = 'translateY(0)'; }, 10);
   setTimeout(() => {
-    notification.style.opacity = '1';
-    notification.style.transform = 'translateY(0)';
-  }, 10);
-
-  // Remove after 3 seconds
-  setTimeout(() => {
-    notification.style.opacity = '0';
-    notification.style.transform = 'translateY(20px)';
-    setTimeout(() => {
-      document.body.removeChild(notification);
-    }, 300);
+    n.style.opacity = '0';
+    n.style.transform = 'translateY(20px)';
+    setTimeout(() => n.remove(), 300);
   }, 3000);
-}
-
-// SOS Alert (inherited from dashboard.js)
-function triggerSOS() {
-  const user = getCurrentUser();
-  if (!user) return;
-
-  const message = `🚨 SOS ALERT 🚨\n\nOfficer: ${user.fullName}\nBadge ID: ${user.badgeId}\nStation: ${user.station}\nLocation: ${currentLocation ? currentLocation.textContent : 'Unknown'}\nTime: ${currentTime ? currentTime.textContent : 'Unknown'}\n\nThis is an emergency alert!`;
-
-  // Show alert
-  alert(message);
-
-  // Try to call emergency numbers
-  if (confirm('Do you want to call emergency services?')) {
-    window.open('tel:112', '_self');
-  }
-
-  // Store SOS alert
-  const sosAlert = {
-    officer: user.fullName,
-    badgeId: user.badgeId,
-    station: user.station,
-    location: currentLocation ? currentLocation.textContent : 'Unknown',
-    time: currentTime ? currentTime.textContent : 'Unknown',
-    timestamp: new Date().toISOString()
-  };
-
-  const alerts = JSON.parse(localStorage.getItem('constableSOSAlerts')) || [];
-  alerts.push(sosAlert);
-  localStorage.setItem('constableSOSAlerts', JSON.stringify(alerts));
-
-  // Show notification
-  showNotification('SOS alert sent successfully!', 'success');
-}
-
-// Show notifications (inherited from dashboard.js)
-function showNotifications() {
-  const alerts = JSON.parse(localStorage.getItem('constableSOSAlerts')) || [];
-  const firs = JSON.parse(localStorage.getItem('constableFIRs')) || [];
-  const cases = JSON.parse(localStorage.getItem('constableCases')) || [];
-
-  let message = 'Recent Notifications:\n\n';
-
-  if (alerts.length > 0) {
-    message += `🚨 SOS Alerts: ${alerts.length}\n`;
-  }
-
-  if (firs.length > 0) {
-    message += `📄 New FIRs: ${firs.length}\n`;
-  }
-
-  if (cases.length > 0) {
-    message += `📁 Case Updates: ${cases.length}\n`;
-  }
-
-  if (alerts.length === 0 && firs.length === 0 && cases.length === 0) {
-    message += 'No new notifications.';
-  }
-
-  alert(message);
-
-  // Update notification badge
-  const totalNotifications = alerts.length + firs.length + cases.length;
-  const badge = document.getElementById('notificationBadge');
-  if (badge) {
-    badge.textContent = totalNotifications;
-    badge.style.display = totalNotifications > 0 ? 'inline-block' : 'none';
-  }
-}
-
-// Logout function (inherited from dashboard.js)
-function logout() {
-  if (confirm('Are you sure you want to logout?')) {
-    sessionStorage.removeItem('constableCurrentUser');
-    localStorage.removeItem('constableCurrentUser');
-    window.location.href = 'index.html';
-  }
 }

@@ -51,6 +51,25 @@ if (!fs.existsSync(DB_FILE)) {
     fs.writeFileSync(DB_FILE, JSON.stringify(initialDbState, null, 2));
 }
 
+// Database helper functions
+const readDb = () => {
+    try {
+        const data = fs.readFileSync(DB_FILE, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.error('Error reading database:', error);
+        return initialDbState;
+    }
+};
+
+const writeDb = (data) => {
+    try {
+        fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+    } catch (error) {
+        console.error('Error writing database:', error);
+    }
+};
+
 // Seed a default constable account so the deployed site always has a working login
 async function seedDefaultUser() {
     try {
@@ -80,26 +99,6 @@ async function seedDefaultUser() {
 
 // Run seed on startup
 seedDefaultUser();
-
-
-// Database helper functions
-const readDb = () => {
-    try {
-        const data = fs.readFileSync(DB_FILE, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Error reading database:', error);
-        return initialDbState;
-    }
-};
-
-const writeDb = (data) => {
-    try {
-        fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
-    } catch (error) {
-        console.error('Error writing database:', error);
-    }
-};
 
 // JWT Secret
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';

@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Settings - Personal Constable Portal</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/sidebar.css">
   <link rel="stylesheet" href="css/settings.css">
 </head>
+
 <body>
   <!-- Header -->
   <header class="dashboard-header">
@@ -139,7 +142,7 @@
               Change Password
             </button>
           </div>
-          
+
           <!-- Password Change Form -->
           <div class="password-form" id="passwordForm" style="display: none;">
             <form onsubmit="changePassword(event)">
@@ -164,7 +167,8 @@
                 <div class="input-wrapper">
                   <span class="input-icon">🔒</span>
                   <input type="password" id="confirmNewPassword" placeholder="Confirm new password" required>
-                  <button type="button" class="toggle-password" onclick="togglePassword('confirmNewPassword')">👁️</button>
+                  <button type="button" class="toggle-password"
+                    onclick="togglePassword('confirmNewPassword')">👁️</button>
                 </div>
               </div>
               <div class="password-strength" id="passwordStrength"></div>
@@ -192,7 +196,7 @@
               <span class="slider"></span>
             </label>
           </div>
-          
+
           <div class="setting-item">
             <div class="setting-info">
               <h4>Font Size</h4>
@@ -204,7 +208,7 @@
               <button class="font-btn reset" onclick="resetFontSize()">Reset</button>
             </div>
           </div>
-          
+
           <div class="setting-item">
             <div class="setting-info">
               <h4>Animations</h4>
@@ -232,7 +236,7 @@
               <span class="slider"></span>
             </label>
           </div>
-          
+
           <div class="setting-item">
             <div class="setting-info">
               <h4>Camera Access</h4>
@@ -243,7 +247,7 @@
               <span class="slider"></span>
             </label>
           </div>
-          
+
           <div class="setting-item">
             <div class="setting-info">
               <h4>Data Collection</h4>
@@ -274,7 +278,7 @@
               <option value="0">Never</option>
             </select>
           </div>
-          
+
           <div class="setting-item">
             <div class="setting-info">
               <h4>Backup Data</h4>
@@ -285,7 +289,7 @@
               Create Backup
             </button>
           </div>
-          
+
           <div class="setting-item">
             <div class="setting-info">
               <h4>Clear Cache</h4>
@@ -313,7 +317,7 @@
               Manage Contacts
             </button>
           </div>
-          
+
           <div class="setting-item">
             <div class="setting-info">
               <h4>Emergency Protocol</h4>
@@ -371,7 +375,8 @@
   <!-- Overlay for mobile -->
   <div class="overlay" id="overlay"></div>
 
-  <script src="js/settings.js"></script>
+  <script type="module" src="js/settings.js"></script>
 </body>
+
 </html>
 </task_progress>

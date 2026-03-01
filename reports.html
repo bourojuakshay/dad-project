@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reports - Personal Constable Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/sidebar.css">
@@ -23,7 +25,7 @@
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .reports-title {
@@ -91,14 +93,14 @@
             background: white;
             border-radius: 12px;
             padding: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             border-left: 4px solid #1a2a6c;
             transition: all 0.3s ease;
         }
 
         .report-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
         }
 
         .report-header {
@@ -178,7 +180,7 @@
             padding: 60px;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .no-reports i {
@@ -200,7 +202,7 @@
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
         }
 
@@ -223,7 +225,8 @@
             font-weight: 500;
         }
 
-        .filter-group select, .filter-group input {
+        .filter-group select,
+        .filter-group input {
             padding: 8px 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
@@ -231,7 +234,8 @@
             outline: none;
         }
 
-        .filter-group select:focus, .filter-group input:focus {
+        .filter-group select:focus,
+        .filter-group input:focus {
             border-color: #1a2a6c;
             box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.1);
         }
@@ -241,12 +245,12 @@
                 flex-direction: column;
                 gap: 15px;
             }
-            
+
             .report-actions {
                 width: 100%;
                 justify-content: center;
             }
-            
+
             .filter-row {
                 flex-direction: column;
                 align-items: stretch;
@@ -254,6 +258,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
@@ -263,7 +268,7 @@
                 <span>Constable Portal</span>
             </div>
         </div>
-        
+
         <div class="sidebar-menu">
             <a href="dashboard.html" class="menu-item">
                 <i class="fas fa-tachometer-alt"></i>
@@ -310,7 +315,7 @@
                 <span>Settings</span>
             </a>
         </div>
-        
+
         <div class="sidebar-footer">
             <button class="logout-btn" onclick="logout()">
                 <i class="fas fa-sign-out-alt"></i>
@@ -372,7 +377,8 @@
                     <i class="fas fa-chart-bar"></i>
                     <div>
                         <div>Reports & Analytics</div>
-                        <div style="font-size: 14px; color: #666; font-weight: normal;">Comprehensive activity reports</div>
+                        <div style="font-size: 14px; color: #666; font-weight: normal;">Comprehensive activity reports
+                        </div>
                     </div>
                 </div>
                 <div class="report-actions">
@@ -392,7 +398,7 @@
         </div>
     </div>
 
-    <script src="js/dashboard.js"></script>
+    <script type="module" src="js/dashboard.js"></script>
     <script>
         // Sample report data
         const sampleReports = [
@@ -413,7 +419,7 @@
             {
                 id: 2,
                 title: "Weekly Summary Report - Week 8, 2026",
-                type: "weekly", 
+                type: "weekly",
                 date: "2026-02-25",
                 content: "Weekly summary of all police activities, crime statistics, and community engagement efforts.",
                 stats: {
@@ -428,7 +434,7 @@
                 id: 3,
                 title: "Monthly Crime Statistics - February 2026",
                 type: "monthly",
-                date: "2026-02-25", 
+                date: "2026-02-25",
                 content: "Monthly crime statistics and analysis for February 2026, including trend analysis and prevention recommendations.",
                 stats: {
                     complaints: 98,
@@ -469,7 +475,7 @@
         ];
 
         // Load reports on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadReports();
             setupEventListeners();
         });
@@ -477,7 +483,7 @@
         function loadReports() {
             const reportsGrid = document.getElementById('reports-grid');
             const currentUser = getCurrentUser();
-            
+
             if (!currentUser) {
                 window.location.href = 'index.html';
                 return;
@@ -550,7 +556,7 @@
         function getStatIcon(key) {
             const icons = {
                 complaints: 'fas fa-file-alt',
-                fir: 'fas fa-file-contract', 
+                fir: 'fas fa-file-contract',
                 patrols: 'fas fa-walkie-talkie',
                 arrests: 'fas fa-handcuffs',
                 total: 'fas fa-chart-line',
@@ -566,10 +572,10 @@
 
         function formatDate(dateString) {
             const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
             });
         }
 
@@ -599,7 +605,7 @@
             }
 
             const reportsGrid = document.getElementById('reports-grid');
-            
+
             if (filteredReports.length === 0) {
                 reportsGrid.innerHTML = `
                     <div class="no-reports">
@@ -668,7 +674,7 @@
             };
 
             alert(`Generating ${reportTypes[type]} for ${currentUser.fullName}...`);
-            
+
             // Simulate report generation
             setTimeout(() => {
                 alert(`${reportTypes[type]} generated successfully!`);
@@ -698,4 +704,5 @@
         }
     </script>
 </body>
+
 </html>

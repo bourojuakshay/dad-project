@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profile - Personal Constable Portal</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/sidebar.css">
   <link rel="stylesheet" href="css/profile.css">
   <link rel="stylesheet" href="css/auto-lock.css">
 </head>
+
 <body>
   <!-- Header -->
   <header class="dashboard-header">
@@ -125,11 +128,13 @@
         <div class="profile-card">
           <div class="profile-photo-section">
             <div class="profile-photo-container">
-              <img id="profilePhoto" src="https://via.placeholder.com/200x200/1a365d/ffffff?text=Constable" alt="Profile Photo" class="profile-photo">
+              <img id="profilePhoto" src="https://via.placeholder.com/200x200/1a365d/ffffff?text=Constable"
+                alt="Profile Photo" class="profile-photo">
               <button class="photo-edit-btn" onclick="document.getElementById('photoInput').click()">
                 <span class="edit-icon">✏️</span>
               </button>
-              <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="updateProfilePhoto(event)">
+              <input type="file" id="photoInput" accept="image/*" style="display: none;"
+                onchange="updateProfilePhoto(event)">
             </div>
             <div class="photo-actions">
               <button class="photo-btn primary" onclick="capturePhoto()">
@@ -367,8 +372,9 @@
   <!-- Overlay for mobile -->
   <div class="overlay" id="overlay"></div>
 
-  <script src="js/profile.js"></script>
-  <script src="js/auto-lock.js"></script>
+  <script type="module" src="js/profile.js"></script>
+  <script type="module" src="js/auto-lock.js"></script>
 </body>
+
 </html>
 </task_progress>

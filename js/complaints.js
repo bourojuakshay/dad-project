@@ -1,586 +1,248 @@
-// Complaints JavaScript Logic
+// ─── Complaints – Firebase Firestore ─────────────────────────────────────────
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import {
+  getFirestore, collection, query, where,
+  getDocs, addDoc, updateDoc, deleteDoc,
+  doc, serverTimestamp, orderBy
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Global Variables
+const firebaseConfig = {
+  apiKey: "AIzaSyByqlrBrUqv5twev84RtpNLNh0EakUTi8c",
+  authDomain: "police-port.firebaseapp.com",
+  projectId: "police-port",
+  storageBucket: "police-port.firebasestorage.app",
+  messagingSenderId: "602535462028",
+  appId: "1:602535462028:web:8446bbee4c1e0b988ba7a9"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
 let complaints = [];
 let currentFilter = 'all';
 let searchQuery = '';
+let currentUID = null;
+let currentUser = null;
 
-// DOM Elements
-const userName = document.getElementById('userName');
-const totalComplaints = document.getElementById('totalComplaints');
-const pendingComplaints = document.getElementById('pendingComplaints');
-const resolvedComplaints = document.getElementById('resolvedComplaints');
-const urgentComplaints = document.getElementById('urgentComplaints');
-const complaintsTableBody = document.getElementById('complaintsTableBody');
+// ─── DOM ──────────────────────────────────────────────────────────────────────
+const userNameEl = document.getElementById('userName');
+const totalComplaintsEl = document.getElementById('totalComplaints');
+const pendingComplaintsEl = document.getElementById('pendingComplaints');
+const resolvedComplaintsEl = document.getElementById('resolvedComplaints');
+const urgentComplaintsEl = document.getElementById('urgentComplaints');
+const complaintsTableBodyEl = document.getElementById('complaintsTableBody');
 const complaintModal = document.getElementById('complaintModal');
 const complaintDetailsModal = document.getElementById('complaintDetailsModal');
 
-// Initialize Complaints Page
-document.addEventListener('DOMContentLoaded', function () {
-  // Check authentication
-  checkAuth();
+// ─── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = 'index.html'; return; }
+    currentUID = user.uid;
+    const stored = sessionStorage.getItem('constableCurrentUser') || localStorage.getItem('constableCurrentUser');
+    currentUser = stored ? JSON.parse(stored) : { uid: user.uid, email: user.email };
+    if (userNameEl) userNameEl.textContent = currentUser.fullName || currentUser.email;
 
-  // Set up event listeners
-  setupEventListeners();
-
-  // Load user data
-  loadUserData();
-
-  // Load complaints
-  loadComplaints();
-
-  // Update statistics
-  updateStatistics();
-
-  // Set active navigation
-  setActiveNav();
+    setupSidebar();
+    setupModalEvents();
+    setActiveNav();
+    await loadComplaints();
+  });
 });
 
-// Check if user is authenticated
-function checkAuth() {
-  const currentUser = getCurrentUser();
-  if (!currentUser) {
-    window.location.href = 'index.html';
-    return;
-  }
+function setupSidebar() {
+  const sb = document.getElementById('sidebar');
+  const tog = document.getElementById('sidebarToggle');
+  const ov = document.getElementById('overlay');
+  if (tog) tog.addEventListener('click', () => { sb.classList.toggle('active'); ov.classList.toggle('active'); });
+  if (ov) ov.addEventListener('click', () => { sb.classList.remove('active'); ov.classList.remove('active'); });
 }
 
-// Get current user from storage
-function getCurrentUser() {
-  let user = sessionStorage.getItem('constableCurrentUser');
-  if (!user) {
-    user = localStorage.getItem('constableCurrentUser');
-  }
-  return user ? JSON.parse(user) : null;
+function setupModalEvents() {
+  if (complaintModal) complaintModal.addEventListener('click', (e) => { if (e.target === complaintModal) closeComplaintModal(); });
+  if (complaintDetailsModal) complaintDetailsModal.addEventListener('click', (e) => { if (e.target === complaintDetailsModal) closeComplaintDetailsModal(); });
 }
 
-// Set up event listeners
-function setupEventListeners() {
-  // Sidebar toggle
-  const sidebarToggle = document.getElementById('sidebarToggle');
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('overlay');
-
-  if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', function () {
-      sidebar.classList.toggle('active');
-      overlay.classList.toggle('active');
-    });
-  }
-
-  if (overlay) {
-    overlay.addEventListener('click', function () {
-      sidebar.classList.remove('active');
-      overlay.classList.remove('active');
-    });
-  }
-
-  // Close sidebar when window is resized to desktop
-  window.addEventListener('resize', function () {
-    if (window.innerWidth > 1024) {
-      sidebar.classList.remove('active');
-      overlay.classList.remove('active');
-    }
-  });
-
-  // Modal events
-  complaintModal.addEventListener('click', function (e) {
-    if (e.target === complaintModal) {
-      closeComplaintModal();
-    }
-  });
-
-  complaintDetailsModal.addEventListener('click', function (e) {
-    if (e.target === complaintDetailsModal) {
-      closeComplaintDetailsModal();
-    }
-  });
-}
-
-// Load user data
-function loadUserData() {
-  const user = getCurrentUser();
-  if (user) {
-    userName.textContent = user.fullName;
-  }
-}
-
-// Load complaints from Backend
+// ─── Load Complaints from Firestore ──────────────────────────────────────────
 async function loadComplaints() {
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-  if (!token) return;
-
   try {
-    const response = await fetch('/api/complaints', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-
-    if (response.ok) {
-      complaints = await response.json();
-    } else {
-      complaints = [];
-    }
-  } catch (error) {
-    console.error('Error loading complaints:', error);
+    const q = query(
+      collection(db, 'complaints'),
+      where('createdBy', '==', currentUID),
+      orderBy('createdAt', 'desc')
+    );
+    const snap = await getDocs(q);
+    complaints = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (err) {
+    console.error('Load complaints error:', err);
     complaints = [];
   }
-
   renderComplaints();
 }
 
-// Removed sample data creation and localStorage saving.
-
-// Render complaints table
+// ─── Render ───────────────────────────────────────────────────────────────────
 function renderComplaints() {
-  complaintsTableBody.innerHTML = '';
+  complaintsTableBodyEl.innerHTML = '';
+  const filtered = filterAndSearch();
 
-  const filteredComplaints = filterAndSearchComplaints();
-
-  if (filteredComplaints.length === 0) {
-    complaintsTableBody.innerHTML = `
-      <tr>
-        <td colspan="7" style="text-align: center; color: var(--gray-600); padding: 40px;">
-          No complaints found
-        </td>
-      </tr>
-    `;
+  if (filtered.length === 0) {
+    complaintsTableBodyEl.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:#718096">No complaints found</td></tr>`;
+    updateStats();
     return;
   }
 
-  filteredComplaints.forEach(complaint => {
+  filtered.forEach(c => {
+    const createdAt = c.createdAt?.toDate ? c.createdAt.toDate().toLocaleDateString('en-IN') : (c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-IN') : '—');
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${complaint.id}</td>
-      <td>${complaint.complainantName}</td>
-      <td><span class="status-badge">${complaint.category}</span></td>
-      <td>${new Date(complaint.createdAt).toLocaleDateString()}</td>
-      <td><span class="status-badge status-${complaint.status.toLowerCase()}">${complaint.status}</span></td>
-      <td><span class="priority-badge priority-${complaint.priority.toLowerCase()}">${complaint.priority}</span></td>
+      <td>${c.id.slice(0, 8).toUpperCase()}</td>
+      <td>${c.complainantName || '—'}</td>
+      <td><span class="status-badge">${c.category || '—'}</span></td>
+      <td>${createdAt}</td>
+      <td><span class="status-badge status-${(c.status || '').toLowerCase()}">${c.status || '—'}</span></td>
+      <td><span class="priority-badge priority-${(c.priority || '').toLowerCase()}">${c.priority || '—'}</span></td>
       <td>
-        <button class="action-btn primary" onclick="viewComplaintDetails('${complaint.id}')">View</button>
-        <button class="action-btn secondary" onclick="editComplaint('${complaint.id}')">Edit</button>
-        <button class="action-btn danger" onclick="deleteComplaint('${complaint.id}')">Delete</button>
-      </td>
-    `;
-    complaintsTableBody.appendChild(row);
+        <button class="action-btn primary" onclick="viewComplaintDetails('${c.id}')">View</button>
+        <button class="action-btn danger" onclick="deleteComplaint('${c.id}')">Delete</button>
+      </td>`;
+    complaintsTableBodyEl.appendChild(row);
   });
-
-  updateStatistics();
+  updateStats();
 }
 
-// Filter and search complaints
-function filterAndSearchComplaints() {
-  let filtered = complaints;
-
-  // Filter by status
+function filterAndSearch() {
+  let list = [...complaints];
   if (currentFilter !== 'all') {
-    filtered = filtered.filter(complaint => {
-      if (currentFilter === 'urgent') {
-        return complaint.priority === 'Urgent';
-      } else {
-        return complaint.status.toLowerCase() === currentFilter;
-      }
-    });
+    list = list.filter(c => currentFilter === 'urgent' ? c.priority === 'Urgent' : (c.status || '').toLowerCase() === currentFilter);
   }
-
-  // Search
-  if (searchQuery.trim() !== '') {
-    const query = searchQuery.toLowerCase();
-    filtered = filtered.filter(complaint =>
-      complaint.id.toLowerCase().includes(query) ||
-      complaint.complainantName.toLowerCase().includes(query) ||
-      complaint.category.toLowerCase().includes(query) ||
-      complaint.description.toLowerCase().includes(query) ||
-      complaint.location.toLowerCase().includes(query)
+  if (searchQuery.trim()) {
+    const q = searchQuery.toLowerCase();
+    list = list.filter(c =>
+      (c.complainantName || '').toLowerCase().includes(q) ||
+      (c.category || '').toLowerCase().includes(q) ||
+      (c.description || '').toLowerCase().includes(q)
     );
   }
-
-  // Sort by date (newest first)
-  filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-  return filtered;
+  return list;
 }
 
-// Filter complaints
-function filterComplaints(filter) {
-  currentFilter = filter;
-
-  // Update filter buttons
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.classList.remove('active');
-  });
-  event.target.classList.add('active');
-
-  renderComplaints();
+function updateStats() {
+  if (totalComplaintsEl) totalComplaintsEl.textContent = complaints.length;
+  if (pendingComplaintsEl) pendingComplaintsEl.textContent = complaints.filter(c => c.status === 'Pending').length;
+  if (resolvedComplaintsEl) resolvedComplaintsEl.textContent = complaints.filter(c => c.status === 'Resolved').length;
+  if (urgentComplaintsEl) urgentComplaintsEl.textContent = complaints.filter(c => c.priority === 'Urgent').length;
 }
 
-// Search complaints
-function searchComplaints() {
-  searchQuery = document.getElementById('complaintSearch').value;
-  renderComplaints();
-}
-
-// Update statistics
-function updateStatistics() {
-  totalComplaints.textContent = complaints.length;
-
-  const pending = complaints.filter(c => c.status === 'Pending').length;
-  const resolved = complaints.filter(c => c.status === 'Resolved').length;
-  const urgent = complaints.filter(c => c.priority === 'Urgent').length;
-
-  pendingComplaints.textContent = pending;
-  resolvedComplaints.textContent = resolved;
-  urgentComplaints.textContent = urgent;
-}
-
-// Open complaint modal
-function openComplaintModal() {
+// ─── Modal ────────────────────────────────────────────────────────────────────
+window.openComplaintModal = function () {
   complaintModal.style.display = 'flex';
-  setTimeout(() => {
-    complaintModal.classList.add('active');
-  }, 10);
-}
+  setTimeout(() => complaintModal.classList.add('active'), 10);
+};
 
-// Close complaint modal
-function closeComplaintModal() {
+window.closeComplaintModal = function () {
   complaintModal.classList.remove('active');
-  setTimeout(() => {
-    complaintModal.style.display = 'none';
-    document.getElementById('complaintForm').reset();
-  }, 300);
-}
+  setTimeout(() => { complaintModal.style.display = 'none'; document.getElementById('complaintForm').reset(); }, 300);
+};
 
-// Submit complaint
-async function submitComplaint() {
-  const formData = {
-    complainantName: document.getElementById('complainantName').value,
-    complainantPhone: document.getElementById('complainantPhone').value,
-    complainantAddress: document.getElementById('complainantAddress').value,
+window.closeComplaintDetailsModal = function () {
+  complaintDetailsModal.classList.remove('active');
+  setTimeout(() => { complaintDetailsModal.style.display = 'none'; }, 300);
+};
+
+// ─── Submit Complaint to Firestore ────────────────────────────────────────────
+window.submitComplaint = async function () {
+  const data = {
+    complainantName: document.getElementById('complainantName').value.trim(),
+    complainantPhone: document.getElementById('complainantPhone').value.trim(),
+    complainantAddress: document.getElementById('complainantAddress').value.trim(),
     category: document.getElementById('complaintCategory').value,
-    description: document.getElementById('complaintDescription').value,
+    description: document.getElementById('complaintDescription').value.trim(),
     priority: document.getElementById('complaintPriority').value,
-    location: document.getElementById('complaintLocation').value
+    location: document.getElementById('complaintLocation').value.trim(),
+    status: 'Pending',
+    createdBy: currentUID,
+    createdAt: serverTimestamp()
   };
 
-  // Validation
-  if (!formData.complainantName || !formData.complainantPhone || !formData.complainantAddress ||
-    !formData.category || !formData.description) {
-    showNotification('Please fill in all required fields', 'error');
-    return;
+  if (!data.complainantName || !data.category || !data.description) {
+    showNotification('Please fill in all required fields', 'error'); return;
   }
 
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
   try {
-    const response = await fetch('/api/complaints', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(formData)
-    });
-
-    if (response.ok) {
-      const newComplaint = await response.json();
-
-      // Map backend to frontend schema expectations
-      Object.assign(newComplaint, formData);
-      newComplaint.status = 'Pending';
-
-      complaints.unshift(newComplaint);
-      renderComplaints();
-      closeComplaintModal();
-      showNotification('Complaint submitted successfully!', 'success');
-    } else {
-      showNotification('Failed to submit complaint.', 'error');
-    }
-  } catch (error) {
-    console.error('Submit error:', error);
-    showNotification('Network error.', 'error');
+    const ref = await addDoc(collection(db, 'complaints'), data);
+    complaints.unshift({ id: ref.id, ...data, createdAt: new Date() });
+    renderComplaints();
+    closeComplaintModal();
+    showNotification('Complaint submitted successfully!', 'success');
+  } catch (err) {
+    console.error('Submit error:', err);
+    showNotification('Failed to submit complaint', 'error');
   }
-}
+};
 
-// View complaint details
-function viewComplaintDetails(complaintId) {
-  const complaint = complaints.find(c => c.id === complaintId);
-  if (!complaint) return;
-
+// ─── View Details ─────────────────────────────────────────────────────────────
+window.viewComplaintDetails = function (id) {
+  const c = complaints.find(x => x.id === id);
+  if (!c) return;
   const content = document.getElementById('complaintDetailsContent');
   content.innerHTML = `
     <div class="complaint-details">
-      <div class="detail-item">
-        <div class="detail-label">Complaint ID</div>
-        <div class="detail-value">${complaint.id}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">Status</div>
-        <div class="detail-value">
-          <span class="status-badge status-${complaint.status.toLowerCase()}">${complaint.status}</span>
-        </div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">Priority</div>
-        <div class="detail-value">
-          <span class="priority-badge priority-${complaint.priority.toLowerCase()}">${complaint.priority}</span>
-        </div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">Created</div>
-        <div class="detail-value">${new Date(complaint.createdAt).toLocaleString()}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">Updated</div>
-        <div class="detail-value">${new Date(complaint.updatedAt).toLocaleString()}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">Category</div>
-        <div class="detail-value">${complaint.category}</div>
-      </div>
-    </div>
-    
-    <div style="margin-top: 20px; padding: 16px; background: var(--gray-100); border-radius: 12px; border: 1px solid var(--gray-200);">
-      <h4 style="margin: 0 0 12px 0; color: var(--gray-800);">Complainant Information</h4>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <div>
-          <div class="detail-label">Name</div>
-          <div class="detail-value">${complaint.complainantName}</div>
-        </div>
-        <div>
-          <div class="detail-label">Phone</div>
-          <div class="detail-value">${complaint.complainantPhone}</div>
-        </div>
-      </div>
-      <div style="margin-top: 12px;">
-        <div class="detail-label">Address</div>
-        <div class="detail-value" style="white-space: pre-line;">${complaint.complainantAddress}</div>
-      </div>
-    </div>
-    
-    <div style="margin-top: 20px; padding: 16px; background: var(--gray-100); border-radius: 12px; border: 1px solid var(--gray-200);">
-      <h4 style="margin: 0 0 12px 0; color: var(--gray-800);">Incident Details</h4>
-      <div class="detail-label">Description</div>
-      <div class="detail-value" style="white-space: pre-line; margin-bottom: 12px;">${complaint.description}</div>
-      <div class="detail-label">Location</div>
-      <div class="detail-value">${complaint.location || 'Not specified'}</div>
-    </div>
-  `;
-
+      <div class="detail-item"><div class="detail-label">ID</div><div class="detail-value">${c.id}</div></div>
+      <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value"><span class="status-badge status-${(c.status || '').toLowerCase()}">${c.status}</span></div></div>
+      <div class="detail-item"><div class="detail-label">Priority</div><div class="detail-value"><span class="priority-badge priority-${(c.priority || '').toLowerCase()}">${c.priority}</span></div></div>
+      <div class="detail-item"><div class="detail-label">Category</div><div class="detail-value">${c.category}</div></div>
+      <div class="detail-item"><div class="detail-label">Complainant</div><div class="detail-value">${c.complainantName}</div></div>
+      <div class="detail-item"><div class="detail-label">Phone</div><div class="detail-value">${c.complainantPhone}</div></div>
+      <div class="detail-item" style="grid-column:1/-1"><div class="detail-label">Description</div><div class="detail-value" style="white-space:pre-line">${c.description}</div></div>
+      <div class="detail-item"><div class="detail-label">Location</div><div class="detail-value">${c.location || 'Not specified'}</div></div>
+    </div>`;
   complaintDetailsModal.style.display = 'flex';
-  setTimeout(() => {
-    complaintDetailsModal.classList.add('active');
-  }, 10);
-}
+  setTimeout(() => complaintDetailsModal.classList.add('active'), 10);
+};
 
-// Close complaint details modal
-function closeComplaintDetailsModal() {
-  complaintDetailsModal.classList.remove('active');
-  setTimeout(() => {
-    complaintDetailsModal.style.display = 'none';
-  }, 300);
-}
-
-// Edit complaint
-function editComplaint(complaintId) {
-  const complaint = complaints.find(c => c.id === complaintId);
-  if (!complaint) return;
-
-  // Pre-fill form with complaint data
-  document.getElementById('complainantName').value = complaint.complainantName;
-  document.getElementById('complainantPhone').value = complaint.complainantPhone;
-  document.getElementById('complainantAddress').value = complaint.complainantAddress;
-  document.getElementById('complaintCategory').value = complaint.category;
-  document.getElementById('complaintDescription').value = complaint.description;
-  document.getElementById('complaintPriority').value = complaint.priority;
-  document.getElementById('complaintLocation').value = complaint.location;
-
-  // Change submit function to update
-  const submitBtn = document.querySelector('.modal-footer .primary-btn');
-  submitBtn.onclick = () => updateComplaint(complaintId);
-  submitBtn.textContent = 'Update Complaint';
-
-  openComplaintModal();
-}
-
-// Update complaint
-async function updateComplaint(complaintId) {
-  // Mocking update as there's no backend endpoint to cleanly put complaints yet
-  const formData = {
-    complainantName: document.getElementById('complainantName').value,
-    complainantPhone: document.getElementById('complainantPhone').value,
-    complainantAddress: document.getElementById('complainantAddress').value,
-    category: document.getElementById('complaintCategory').value,
-    description: document.getElementById('complaintDescription').value,
-    priority: document.getElementById('complaintPriority').value,
-    location: document.getElementById('complaintLocation').value
-  };
-
-  // Validation
-  if (!formData.complainantName || !formData.complainantPhone || !formData.complainantAddress ||
-    !formData.category || !formData.description) {
-    showNotification('Please fill in all required fields', 'error');
-    return;
-  }
-
-  const index = complaints.findIndex(c => c.id === complaintId);
-  if (index > -1) {
-    complaints[index] = {
-      ...complaints[index],
-      ...formData,
-      updatedAt: new Date().toISOString()
-    };
-
+// ─── Delete ───────────────────────────────────────────────────────────────────
+window.deleteComplaint = async function (id) {
+  if (!confirm('Delete this complaint?')) return;
+  try {
+    await deleteDoc(doc(db, 'complaints', id));
+    complaints = complaints.filter(c => c.id !== id);
     renderComplaints();
-
-    // Reset submit function
-    const submitBtn = document.querySelector('.modal-footer .primary-btn');
-    submitBtn.onclick = submitComplaint;
-    submitBtn.textContent = 'Submit Complaint';
-
-    closeComplaintModal();
-    showNotification('Complaint mocked update successfully!', 'success');
+    showNotification('Complaint deleted', 'success');
+  } catch (err) {
+    console.error('Delete error:', err);
+    showNotification('Failed to delete', 'error');
   }
-}
+};
 
-// Delete complaint
-function deleteComplaint(complaintId) {
-  if (confirm('Are you sure you want to delete this complaint?')) {
-    complaints = complaints.filter(c => c.id !== complaintId);
-    renderComplaints();
-    showNotification('Complaint mock deleted successfully!', 'success');
-  }
-}
+// ─── Filter / Search ──────────────────────────────────────────────────────────
+window.filterComplaints = function (filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderComplaints();
+};
+window.searchComplaints = function () { searchQuery = document.getElementById('complaintSearch').value; renderComplaints(); };
+window.updateComplaintStatus = function () { closeComplaintDetailsModal(); };
 
-// Update complaint status
-function updateComplaintStatus() {
-  // This would typically be implemented in the complaint details modal
-  // For now, we'll close the modal
-  closeComplaintDetailsModal();
-  showNotification('Complaint status updated!', 'success');
-}
-
-// Set active navigation based on current page
+// ─── Nav ──────────────────────────────────────────────────────────────────────
 function setActiveNav() {
-  const currentPage = window.location.pathname.split('/').pop();
-  const currentLink = document.querySelector(`.nav-link[href="${currentPage}"]`);
-
-  if (currentLink) {
-    currentLink.classList.add('active');
-  }
+  const page = window.location.pathname.split('/').pop();
+  const link = document.querySelector(`.nav-link[href="${page}"]`);
+  if (link) link.classList.add('active');
 }
 
-// Show notification toast
+// ─── SOS / Logout / Notifications ────────────────────────────────────────────
+window.triggerSOS = function () { alert(`🚨 SOS ALERT\nOfficer: ${currentUser?.fullName}\nTime: ${new Date().toLocaleString()}`); if (confirm('Call 112?')) window.open('tel:112', '_self'); };
+window.logout = async function () { if (!confirm('Logout?')) return; await signOut(auth); sessionStorage.clear(); localStorage.removeItem('constableCurrentUser'); window.location.href = 'index.html'; };
+window.showNotifications = function () { alert('No new notifications.'); };
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
 function showNotification(message, type = 'info') {
-  // Create notification element
-  const notification = document.createElement('div');
-  notification.className = `notification ${type}`;
-  notification.textContent = message;
-
-  // Add styles
-  notification.style.position = 'fixed';
-  notification.style.bottom = '20px';
-  notification.style.right = '20px';
-  notification.style.background = type === 'success' ? '#38a169' : '#1a365d';
-  notification.style.color = 'white';
-  notification.style.padding = '15px 20px';
-  notification.style.borderRadius = '8px';
-  notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-  notification.style.zIndex = '1000';
-  notification.style.opacity = '0';
-  notification.style.transform = 'translateY(20px)';
-  notification.style.transition = 'all 0.3s ease';
-
-  // Add to DOM
-  document.body.appendChild(notification);
-
-  // Animate in
-  setTimeout(() => {
-    notification.style.opacity = '1';
-    notification.style.transform = 'translateY(0)';
-  }, 10);
-
-  // Remove after 3 seconds
-  setTimeout(() => {
-    notification.style.opacity = '0';
-    notification.style.transform = 'translateY(20px)';
-    setTimeout(() => {
-      document.body.removeChild(notification);
-    }, 300);
-  }, 3000);
-}
-
-// SOS Alert (inherited from dashboard.js)
-function triggerSOS() {
-  const user = getCurrentUser();
-  if (!user) return;
-
-  const message = `🚨 SOS ALERT 🚨\n\nOfficer: ${user.fullName}\nBadge ID: ${user.badgeId}\nStation: ${user.station}\nLocation: ${currentLocation ? currentLocation.textContent : 'Unknown'}\nTime: ${currentTime ? currentTime.textContent : 'Unknown'}\n\nThis is an emergency alert!`;
-
-  // Show alert
-  alert(message);
-
-  // Try to call emergency numbers
-  if (confirm('Do you want to call emergency services?')) {
-    window.open('tel:112', '_self');
-  }
-
-  // Store SOS alert
-  const sosAlert = {
-    officer: user.fullName,
-    badgeId: user.badgeId,
-    station: user.station,
-    location: currentLocation ? currentLocation.textContent : 'Unknown',
-    time: currentTime ? currentTime.textContent : 'Unknown',
-    timestamp: new Date().toISOString()
-  };
-
-  const alerts = JSON.parse(localStorage.getItem('constableSOSAlerts')) || [];
-  alerts.push(sosAlert);
-  localStorage.setItem('constableSOSAlerts', JSON.stringify(alerts));
-
-  // Show notification
-  showNotification('SOS alert sent successfully!', 'success');
-}
-
-// Show notifications (inherited from dashboard.js)
-function showNotifications() {
-  const alerts = JSON.parse(localStorage.getItem('constableSOSAlerts')) || [];
-  const firs = JSON.parse(localStorage.getItem('constableFIRs')) || [];
-  const cases = JSON.parse(localStorage.getItem('constableCases')) || [];
-
-  let message = 'Recent Notifications:\n\n';
-
-  if (alerts.length > 0) {
-    message += `🚨 SOS Alerts: ${alerts.length}\n`;
-  }
-
-  if (firs.length > 0) {
-    message += `📄 New FIRs: ${firs.length}\n`;
-  }
-
-  if (cases.length > 0) {
-    message += `📁 Case Updates: ${cases.length}\n`;
-  }
-
-  if (alerts.length === 0 && firs.length === 0 && cases.length === 0) {
-    message += 'No new notifications.';
-  }
-
-  alert(message);
-
-  // Update notification badge
-  const totalNotifications = alerts.length + firs.length + cases.length;
-  const badge = document.getElementById('notificationBadge');
-  if (badge) {
-    badge.textContent = totalNotifications;
-    badge.style.display = totalNotifications > 0 ? 'inline-block' : 'none';
-  }
-}
-
-// Logout function (inherited from dashboard.js)
-function logout() {
-  if (confirm('Are you sure you want to logout?')) {
-    sessionStorage.removeItem('constableCurrentUser');
-    localStorage.removeItem('constableCurrentUser');
-    window.location.href = 'index.html';
-  }
+  const n = document.createElement('div');
+  Object.assign(n.style, { position: 'fixed', bottom: '20px', right: '20px', background: type === 'success' ? '#38a169' : '#e53e3e', color: 'white', padding: '14px 20px', borderRadius: '10px', boxShadow: '0 4px 15px rgba(0,0,0,0.2)', zIndex: '9999', opacity: '0', transform: 'translateY(20px)', transition: 'all 0.3s ease', fontFamily: 'Inter,sans-serif', fontWeight: '500' });
+  n.textContent = message;
+  document.body.appendChild(n);
+  setTimeout(() => { n.style.opacity = '1'; n.style.transform = 'translateY(0)'; }, 10);
+  setTimeout(() => { n.style.opacity = '0'; setTimeout(() => n.remove(), 300); }, 3000);
 }

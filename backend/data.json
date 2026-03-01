@@ -1,5 +1,16 @@
 {
-  "users": [],
+  "users": [
+    {
+      "id": "default-admin-001",
+      "username": "admin@police.gov",
+      "email": "admin@police.gov",
+      "fullName": "Admin Constable",
+      "badgeId": "BADGE001",
+      "password": "$2b$10$LHZi1Lz/pO3gEVuuqS6xRuTklt7g8Psmob37uscYX/KgDi3TuYMIS",
+      "role": "constable",
+      "createdAt": "2026-03-01T08:06:13.880Z"
+    }
+  ],
   "complaints": [],
   "firs": [],
   "cases": [],

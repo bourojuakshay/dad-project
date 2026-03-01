@@ -1,35 +1,59 @@
-// Authentication JavaScript Logic
+// ─── Firebase Auth ────────────────────────────────────────────────────────────
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// DOM Elements
-const loginTab = document.getElementById('loginTab');
-const signupTab = document.getElementById('signupTab');
-const loginForm = document.getElementById('loginForm');
-const signupForm = document.getElementById('signupForm');
-const loginError = document.getElementById('loginError');
-const signupError = document.getElementById('signupError');
+const firebaseConfig = {
+  apiKey: "AIzaSyByqlrBrUqv5twev84RtpNLNh0EakUTi8c",
+  authDomain: "police-port.firebaseapp.com",
+  projectId: "police-port",
+  storageBucket: "police-port.firebasestorage.app",
+  messagingSenderId: "602535462028",
+  appId: "1:602535462028:web:8446bbee4c1e0b988ba7a9",
+  measurementId: "G-QXLKY8KMKL"
+};
 
-// Switch between Login and Signup tabs
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ─── Tab switching ────────────────────────────────────────────────────────────
 function switchTab(tabName) {
+  const loginTab = document.getElementById('loginTab');
+  const signupTab = document.getElementById('signupTab');
+  const loginForm = document.getElementById('loginForm');
+  const signupForm = document.getElementById('signupForm');
+  clearErrors();
+
   if (tabName === 'login') {
     loginTab.classList.add('active');
     signupTab.classList.remove('active');
     loginForm.classList.add('active');
     signupForm.classList.remove('active');
-    clearErrorMessages();
   } else {
     loginTab.classList.remove('active');
     signupTab.classList.add('active');
     loginForm.classList.remove('active');
     signupForm.classList.add('active');
-    clearErrorMessages();
   }
 }
+window.switchTab = switchTab;
 
-// Toggle password visibility
+// ─── Toggle Password ──────────────────────────────────────────────────────────
 function togglePassword(inputId) {
   const input = document.getElementById(inputId);
   const button = input.nextElementSibling;
-
   if (input.type === 'password') {
     input.type = 'text';
     button.textContent = '🙈';
@@ -38,71 +62,81 @@ function togglePassword(inputId) {
     button.textContent = '👁️';
   }
 }
+window.togglePassword = togglePassword;
 
-// Clear error messages
-function clearErrorMessages() {
-  loginError.textContent = '';
-  signupError.textContent = '';
+// ─── Error helpers ────────────────────────────────────────────────────────────
+function clearErrors() {
+  const le = document.getElementById('loginError');
+  const se = document.getElementById('signupError');
+  if (le) le.textContent = '';
+  if (se) se.textContent = '';
 }
 
-// Handle Login
+function showError(elementId, message) {
+  const el = document.getElementById(elementId);
+  if (el) { el.textContent = message; el.style.color = '#e53e3e'; }
+}
+
+function showSuccess(elementId, message) {
+  const el = document.getElementById(elementId);
+  if (el) { el.textContent = message; el.style.color = '#38a169'; }
+}
+
+// ─── Login ────────────────────────────────────────────────────────────────────
 async function handleLogin(e) {
   e.preventDefault();
+  clearErrors();
 
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
   const rememberMe = document.getElementById('rememberMe').checked;
 
-  // Basic validation
   if (!email || !password) {
-    showError(loginError, 'Please fill in all fields');
+    showError('loginError', 'Please fill in all fields');
     return;
   }
 
   try {
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        username: email,
-        password: password
-      })
-    });
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const uid = userCredential.user.uid;
 
-    const data = await response.json();
+    // Fetch user profile from Firestore
+    const userSnap = await getDoc(doc(db, 'users', uid));
+    const userData = userSnap.exists() ? userSnap.data() : { uid, email, fullName: email.split('@')[0] };
 
-    if (response.ok) {
-      // Login successful - store token and user temporarily
-      if (rememberMe) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('constableCurrentUser', JSON.stringify(data.user));
-      } else {
-        sessionStorage.setItem('token', data.token);
-        sessionStorage.setItem('constableCurrentUser', JSON.stringify(data.user));
-      }
+    const storage = rememberMe ? localStorage : sessionStorage;
+    storage.setItem('constableCurrentUser', JSON.stringify(userData));
+    storage.setItem('firebaseUID', uid);
 
-      // Ensure profile photo exists
-      if (!localStorage.getItem('constableProfilePhoto')) {
-        const defaultPhoto = 'https://via.placeholder.com/200x200/1a365d/ffffff?text=Constable';
-        localStorage.setItem('constableProfilePhoto', defaultPhoto);
-      }
-
-      // Redirect to security PIN verification
-      window.location.href = 'security.html';
-    } else {
-      showError(loginError, data.error || 'Invalid credentials');
+    // Ensure profile photo fallback exists
+    if (!localStorage.getItem('constableProfilePhoto')) {
+      localStorage.setItem('constableProfilePhoto',
+        'https://ui-avatars.com/api/?name=' + encodeURIComponent(userData.fullName || 'Constable') + '&background=1a365d&color=fff&size=200');
     }
+
+    window.location.href = 'security.html';
   } catch (error) {
     console.error('Login error:', error);
-    showError(loginError, 'Network error. Please try again.');
+    switch (error.code) {
+      case 'auth/user-not-found':
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential':
+        showError('loginError', 'Invalid email or password');
+        break;
+      case 'auth/too-many-requests':
+        showError('loginError', 'Too many attempts. Please try again later.');
+        break;
+      default:
+        showError('loginError', 'Login failed. Please try again.');
+    }
   }
 }
+window.handleLogin = handleLogin;
 
-// Handle Signup
+// ─── Signup ───────────────────────────────────────────────────────────────────
 async function handleSignup(e) {
   e.preventDefault();
+  clearErrors();
 
   const fullName = document.getElementById('fullName').value.trim();
   const badgeId = document.getElementById('badgeId').value.trim();
@@ -114,123 +148,83 @@ async function handleSignup(e) {
 
   // Validation
   if (!fullName || !badgeId || !email || !phoneNumber || !password || !confirmPassword) {
-    showError(signupError, 'Please fill in all fields');
+    showError('signupError', 'Please fill in all fields');
     return;
   }
-
-  if (!validateEmail(email)) {
-    showError(signupError, 'Please enter a valid email address');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showError('signupError', 'Please enter a valid email address');
     return;
   }
-
-  if (!validatePhone(phoneNumber)) {
-    showError(signupError, 'Please enter a valid phone number');
+  if (!/^[6-9]\d{9}$/.test(phoneNumber)) {
+    showError('signupError', 'Please enter a valid 10-digit phone number');
     return;
   }
-
   if (password.length < 6) {
-    showError(signupError, 'Password must be at least 6 characters long');
+    showError('signupError', 'Password must be at least 6 characters');
     return;
   }
-
   if (password !== confirmPassword) {
-    showError(signupError, 'Passwords do not match');
+    showError('signupError', 'Passwords do not match');
     return;
   }
-
   if (!agreeTerms) {
-    showError(signupError, 'You must agree to the Terms & Conditions');
+    showError('signupError', 'You must agree to the Terms & Conditions');
     return;
   }
 
   try {
-    const response = await fetch('/api/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        username: email,
-        email: email,
-        password: password,
-        fullName: fullName,
-        badgeId: badgeId,
-        role: 'constable'
-      })
-    });
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const uid = userCredential.user.uid;
 
-    const data = await response.json();
+    // Save user profile to Firestore
+    const userData = {
+      uid,
+      email,
+      fullName,
+      badgeId,
+      phoneNumber,
+      role: 'constable',
+      rank: 'Constable',
+      station: 'Not set',
+      district: 'Not set',
+      department: 'General',
+      status: 'Active',
+      joinDate: new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString()
+    };
 
-    if (response.ok) {
-      // Auto-login and redirect
-      sessionStorage.setItem('token', data.token);
-      sessionStorage.setItem('constableCurrentUser', JSON.stringify(data.user));
+    await setDoc(doc(db, 'users', uid), userData);
 
-      const defaultPhoto = 'https://via.placeholder.com/200x200/1a365d/ffffff?text=Constable';
-      localStorage.setItem('constableProfilePhoto', defaultPhoto);
+    sessionStorage.setItem('constableCurrentUser', JSON.stringify(userData));
+    sessionStorage.setItem('firebaseUID', uid);
 
-      showSuccess(signupError, 'Account created successfully! Redirecting...');
+    const avatarUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(fullName) + '&background=1a365d&color=fff&size=200';
+    localStorage.setItem('constableProfilePhoto', avatarUrl);
 
-      setTimeout(() => {
-        window.location.href = 'security.html';
-      }, 2000);
-    } else {
-      showError(signupError, data.error || 'Failed to create account');
-    }
+    showSuccess('signupError', 'Account created! Redirecting...');
+    setTimeout(() => { window.location.href = 'security.html'; }, 1500);
   } catch (error) {
     console.error('Signup error:', error);
-    showError(signupError, 'Network error. Please try again.');
+    switch (error.code) {
+      case 'auth/email-already-in-use':
+        showError('signupError', 'Email already registered. Please login instead.');
+        break;
+      case 'auth/weak-password':
+        showError('signupError', 'Password is too weak. Use at least 6 characters.');
+        break;
+      default:
+        showError('signupError', 'Registration failed. Please try again.');
+    }
   }
 }
+window.handleSignup = handleSignup;
 
-// Validation functions
-function validateEmail(email) {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(email);
-}
-
-function validatePhone(phone) {
-  const re = /^[6-9]\d{9}$/;
-  return re.test(phone);
-}
-
-// Error and success display functions
-function showError(element, message) {
-  element.textContent = message;
-  element.style.color = '#e53e3e';
-  element.classList.remove('success');
-}
-
-function showSuccess(element, message) {
-  element.textContent = message;
-  element.style.color = '#38a169';
-  element.classList.add('success');
-}
-
-// Check if user is already logged in
-function checkAuth() {
-  const currentUser = getCurrentUser();
-  if (currentUser) {
-    window.location.href = 'dashboard.html';
-  }
-}
-
-// Redirect to security page first
-function redirectToSecurity() {
-  window.location.href = 'security.html';
-}
-
-// Get current user from storage
-function getCurrentUser() {
-  let user = sessionStorage.getItem('constableCurrentUser');
-  if (!user) {
-    user = localStorage.getItem('constableCurrentUser');
-  }
-  return user ? JSON.parse(user) : null;
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function () {
-  // Check auth state on load
-  checkAuth();
+// ─── Auth state check ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // Already logged in — redirect to dashboard
+      window.location.href = 'dashboard.html';
+    }
+  });
 });

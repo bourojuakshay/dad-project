@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Camera - Personal Constable Portal</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/sidebar.css">
   <link rel="stylesheet" href="css/camera.css">
 </head>
+
 <body>
   <!-- Header -->
   <header class="dashboard-header">
@@ -139,7 +142,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="camera-actions">
             <div class="camera-status">
               <div class="status-indicator" id="cameraStatus">
@@ -151,7 +154,7 @@
                 <span class="info-item" id="cameraFacing">Facing: --</span>
               </div>
             </div>
-            
+
             <div class="camera-buttons">
               <button class="camera-btn primary" id="startCameraBtn" onclick="startCamera()">
                 <span class="btn-icon">📹</span>
@@ -170,7 +173,7 @@
                 <span class="btn-text">Switch</span>
               </button>
             </div>
-            
+
             <div class="camera-settings">
               <div class="setting-group">
                 <label for="flashToggle">Flash:</label>
@@ -216,7 +219,7 @@
               <button class="photo-btn primary" onclick="exportSelectedPhotos()">Export Selected</button>
             </div>
           </div>
-          
+
           <div class="photos-grid" id="photosGrid">
             <!-- Dynamic content -->
           </div>
@@ -264,7 +267,8 @@
   <!-- Overlay for mobile -->
   <div class="overlay" id="overlay"></div>
 
-  <script src="js/camera.js"></script>
+  <script type="module" src="js/camera.js"></script>
 </body>
+
 </html>
 </task_progress>

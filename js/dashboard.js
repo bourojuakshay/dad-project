@@ -1,281 +1,163 @@
-// Dashboard JavaScript Logic
+// ─── Dashboard – Firebase Firestore ──────────────────────────────────────────
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import {
+  getFirestore, collection, query, where,
+  getDocs, addDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// DOM Elements
-const userName = document.getElementById('userName');
-const greetingName = document.getElementById('greetingName');
-const currentDate = document.getElementById('currentDate');
-const currentTime = document.getElementById('currentTime');
-const currentLocation = document.getElementById('currentLocation');
+const firebaseConfig = {
+  apiKey: "AIzaSyByqlrBrUqv5twev84RtpNLNh0EakUTi8c",
+  authDomain: "police-port.firebaseapp.com",
+  projectId: "police-port",
+  storageBucket: "police-port.firebasestorage.app",
+  messagingSenderId: "602535462028",
+  appId: "1:602535462028:web:8446bbee4c1e0b988ba7a9"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+let currentUID = null;
+
+// ─── DOM ──────────────────────────────────────────────────────────────────────
+const userNameEl = document.getElementById('userName');
+const greetingEl = document.getElementById('greetingName');
+const currentDateEl = document.getElementById('currentDate');
+const currentTimeEl = document.getElementById('currentTime');
+const currentLocEl = document.getElementById('currentLocation');
 const statFIR = document.getElementById('statFIR');
 const statCases = document.getElementById('statCases');
 const statLocations = document.getElementById('statLocations');
 const statPhotos = document.getElementById('statPhotos');
 const sidebar = document.getElementById('sidebar');
 const sidebarToggle = document.getElementById('sidebarToggle');
-const overlay = document.getElementById('overlay');
-const navLinks = document.querySelectorAll('.nav-link');
+const overlayEl = document.getElementById('overlay');
 
-// Initialize Dashboard
-document.addEventListener('DOMContentLoaded', function () {
-  // Check authentication
-  checkAuth();
+// ─── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = 'index.html';
+      return;
+    }
+    currentUID = user.uid;
+    // Load from session/local storage for instant render
+    const stored = sessionStorage.getItem('constableCurrentUser') || localStorage.getItem('constableCurrentUser');
+    currentUser = stored ? JSON.parse(stored) : { uid: user.uid, email: user.email, fullName: user.email.split('@')[0] };
 
-  // Set up event listeners
-  setupEventListeners();
-
-  // Load user data
-  loadUserData();
-
-  // Update stats
-  updateStats();
-
-  // Update time and date
-  updateTime();
-  setInterval(updateTime, 1000);
-
-  // Get current location
-  getCurrentLocation();
-
-  // Set active navigation
-  setActiveNav();
+    loadUserData();
+    updateStats();
+    updateTime();
+    setInterval(updateTime, 1000);
+    getCurrentLocation();
+    setActiveNav();
+    setupEventListeners();
+  });
 });
 
-// Check if user is authenticated
-function checkAuth() {
-  const currentUser = getCurrentUser();
-  if (!currentUser) {
-    window.location.href = 'index.html';
-    return;
-  }
-}
-
-// Get current user from storage
-function getCurrentUser() {
-  let user = sessionStorage.getItem('constableCurrentUser');
-  if (!user) {
-    user = localStorage.getItem('constableCurrentUser');
-  }
-  return user ? JSON.parse(user) : null;
-}
-
-// Set up event listeners
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
 function setupEventListeners() {
-  // Sidebar toggle
-  sidebarToggle.addEventListener('click', toggleSidebar);
-  overlay.addEventListener('click', closeSidebar);
-
-  // Navigation links
-  navLinks.forEach(link => {
-    link.addEventListener('click', function (e) {
-      // Remove active class from all links
-      navLinks.forEach(l => l.classList.remove('active'));
-
-      // Add active class to clicked link
-      this.classList.add('active');
-
-      // Close sidebar on mobile
+  if (sidebarToggle) sidebarToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('active');
+    overlayEl.classList.toggle('active');
+  });
+  if (overlayEl) overlayEl.addEventListener('click', () => {
+    sidebar.classList.remove('active');
+    overlayEl.classList.remove('active');
+  });
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1024) {
+      sidebar.classList.remove('active');
+      overlayEl.classList.remove('active');
+    }
+  });
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', () => {
       if (window.innerWidth <= 1024) {
-        closeSidebar();
+        sidebar.classList.remove('active');
+        overlayEl.classList.remove('active');
       }
     });
   });
-
-  // Close sidebar when window is resized to desktop
-  window.addEventListener('resize', function () {
-    if (window.innerWidth > 1024) {
-      sidebar.classList.remove('active');
-      overlay.classList.remove('active');
-    }
-  });
 }
 
-// Toggle sidebar
-function toggleSidebar() {
-  sidebar.classList.toggle('active');
-  overlay.classList.toggle('active');
-}
-
-// Close sidebar
-function closeSidebar() {
-  sidebar.classList.remove('active');
-  overlay.classList.remove('active');
-}
-
-// Load user data
+// ─── User display ─────────────────────────────────────────────────────────────
 function loadUserData() {
-  const user = getCurrentUser();
-  if (user) {
-    if (userName) userName.textContent = user.fullName || user.username;
-    if (greetingName) greetingName.textContent = (user.fullName || user.username).split(' ')[0];
-  }
+  if (!currentUser) return;
+  const name = currentUser.fullName || currentUser.email || 'Constable';
+  if (userNameEl) userNameEl.textContent = name;
+  if (greetingEl) greetingEl.textContent = name.split(' ')[0];
 }
 
-// Update stats
+// ─── Stats from Firestore ─────────────────────────────────────────────────────
 async function updateStats() {
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-  if (!token) return;
-
+  if (!currentUID) return;
   try {
-    const headers = { 'Authorization': `Bearer ${token}` };
+    const firsQ = query(collection(db, 'firs'), where('createdBy', '==', currentUID));
+    const casesQ = query(collection(db, 'cases'), where('createdBy', '==', currentUID));
+    const compQ = query(collection(db, 'complaints'), where('createdBy', '==', currentUID));
 
-    // Fetch FIRs
-    const firsRes = await fetch('/api/firs', { headers });
-    const firs = firsRes.ok ? await firsRes.json() : [];
+    const [firsSnap, casesSnap, compSnap] = await Promise.all([
+      getDocs(firsQ), getDocs(casesQ), getDocs(compQ)
+    ]);
 
-    // Fetch Cases
-    const casesRes = await fetch('/api/cases', { headers });
-    const cases = casesRes.ok ? await casesRes.json() : [];
-
-    // Fetch Locations (only admins/officers can see all, but this endpoint might be restricted)
-    let locationsCount = 0;
-    try {
-      const locRes = await fetch('/api/locations', { headers });
-      if (locRes.ok) {
-        const locs = await locRes.json();
-        locationsCount = locs.length;
-      }
-    } catch (e) { /* Ignore */ }
-
-    // Fetch Uploads/Photos (assuming /api/uploads exists or using complaints as proxy)
-    const complaintsRes = await fetch('/api/complaints', { headers });
-    const complaints = complaintsRes.ok ? await complaintsRes.json() : [];
-
-    if (statFIR) statFIR.textContent = firs.length;
-    if (statCases) statCases.textContent = cases.length;
-    if (statLocations) statLocations.textContent = locationsCount;
-    if (statPhotos) statPhotos.textContent = complaints.length; // fallback
-  } catch (error) {
-    console.error('Error fetching stats:', error);
+    if (statFIR) statFIR.textContent = firsSnap.size;
+    if (statCases) statCases.textContent = casesSnap.size;
+    if (statPhotos) statPhotos.textContent = compSnap.size;
+    if (statLocations) statLocations.textContent = '—';
+  } catch (err) {
+    console.error('Stats error:', err);
   }
 }
 
-// Update time and date
+// ─── Time & Date ──────────────────────────────────────────────────────────────
 function updateTime() {
   const now = new Date();
-
-  // Format date
-  const options = {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  };
-  currentDate.textContent = now.toLocaleDateString('en-US', options);
-
-  // Format time
-  const timeOptions = {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true
-  };
-  currentTime.textContent = now.toLocaleTimeString('en-US', timeOptions);
+  if (currentDateEl) currentDateEl.textContent = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  if (currentTimeEl) currentTimeEl.textContent = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 }
 
-// Get current location
+// ─── Location ─────────────────────────────────────────────────────────────────
 function getCurrentLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      function (position) {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        if (currentLocation) currentLocation.textContent = `Lat: ${lat.toFixed(6)}, Lon: ${lon.toFixed(6)}`;
-
-        // Send location to server
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (token) {
-          fetch('/api/location', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ latitude: lat, longitude: lon })
-          }).catch(err => console.error('Error updating location:', err));
-        }
-      },
-      function (error) {
-        currentLocation.textContent = 'Location unavailable';
-        console.log('Location error:', error);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000
-      }
-    );
-  } else {
-    currentLocation.textContent = 'Geolocation not supported';
+  if (!navigator.geolocation) {
+    if (currentLocEl) currentLocEl.textContent = 'Geolocation not supported';
+    return;
   }
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude.toFixed(6);
+      const lon = pos.coords.longitude.toFixed(6);
+      if (currentLocEl) currentLocEl.textContent = `Lat: ${lat}, Lon: ${lon}`;
+    },
+    () => { if (currentLocEl) currentLocEl.textContent = 'Location unavailable'; },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
 }
 
-// Set active navigation based on current page
+// ─── Navigation ───────────────────────────────────────────────────────────────
 function setActiveNav() {
-  const currentPage = window.location.pathname.split('/').pop();
-  const currentLink = document.querySelector(`.nav-link[href="${currentPage}"]`);
-
-  if (currentLink) {
-    currentLink.classList.add('active');
-  }
+  const page = window.location.pathname.split('/').pop();
+  const link = document.querySelector(`.nav-link[href="${page}"]`);
+  if (link) link.classList.add('active');
 }
 
-// SOS Alert
-function triggerSOS() {
-  const user = getCurrentUser();
-  if (!user) return;
+// ─── SOS ─────────────────────────────────────────────────────────────────────
+window.triggerSOS = function () {
+  const msg = `🚨 SOS ALERT 🚨\n\nOfficer: ${currentUser?.fullName}\nBadge: ${currentUser?.badgeId}\nTime: ${new Date().toLocaleString()}`;
+  alert(msg);
+  if (confirm('Call emergency services (112)?')) window.open('tel:112', '_self');
+};
 
-  const message = `🚨 SOS ALERT 🚨\n\nOfficer: ${user.fullName}\nBadge ID: ${user.badgeId}\nStation: ${user.station}\nLocation: ${currentLocation.textContent}\nTime: ${currentTime.textContent}\n\nThis is an emergency alert!`;
+// ─── Logout ───────────────────────────────────────────────────────────────────
+window.logout = async function () {
+  if (!confirm('Are you sure you want to logout?')) return;
+  await signOut(auth);
+  sessionStorage.clear();
+  localStorage.removeItem('constableCurrentUser');
+  localStorage.removeItem('firebaseUID');
+  window.location.href = 'index.html';
+};
 
-  // Show alert
-  alert(message);
-
-  // Try to call emergency numbers
-  if (confirm('Do you want to call emergency services?')) {
-    window.open('tel:112', '_self');
-  }
-
-  // Store SOS alert
-  const sosAlert = {
-    officer: user.fullName,
-    badgeId: user.badgeId,
-    station: user.station,
-    location: currentLocation.textContent,
-    time: currentTime.textContent,
-    timestamp: new Date().toISOString()
-  };
-
-  const alerts = JSON.parse(localStorage.getItem('constableSOSAlerts')) || [];
-  alerts.push(sosAlert);
-  localStorage.setItem('constableSOSAlerts', JSON.stringify(alerts));
-
-  // Show notification
-  showNotification('SOS alert sent successfully!', 'success');
-}
-
-// Logout function
-function logout() {
-  if (confirm('Are you sure you want to logout?')) {
-    sessionStorage.removeItem('constableCurrentUser');
-    localStorage.removeItem('constableCurrentUser');
-    window.location.href = 'index.html';
-  }
-}
-
-// Utility function to format date
-function formatDate(dateString) {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
-}
-
-// Utility function to format time
-function formatTime(dateString) {
-  const date = new Date(dateString);
-  return date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
+window.showNotifications = function () { alert('No new notifications.'); };
